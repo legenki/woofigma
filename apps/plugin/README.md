@@ -27,6 +27,18 @@ Produces two self-contained artifacts in `apps/plugin/dist/`:
 2. Choose `apps/plugin/manifest.json`.
 3. Run **Woofigma Import** from Plugins → Development.
 
+## Import options
+
+Three ways to provide HTML: drop/choose an `.html` file, paste markup, or enter a
+URL. URL loading fetches the page from the plugin UI, so it only works for
+CORS-permissive sites; for everything else, supply a CORS proxy template whose
+`{url}` placeholder is replaced with the page URL (e.g.
+`https://your-proxy/?url={url}`). Private/authenticated pages can't be loaded
+this way — save them as `.html` and drop them instead.
+
+A screen-size toggle (iPhone 390 / Macbook 1440, default Macbook) sets the render
+viewport width before conversion.
+
 ## Manual E2E
 
 1. Run the plugin. Paste a static HTML document (with inline styles) into the
