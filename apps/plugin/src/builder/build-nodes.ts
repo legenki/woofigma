@@ -129,10 +129,10 @@ function applyGeometry(
 
 function applyFrame(node: FrameNode, change: FigmaNodeChange): void {
   const frame = change as FigmaFrameNodeChange;
-  const fills = mapPaints(frame.fillPaints);
-  if (fills.length > 0) {
-    node.fills = fills;
-  }
+  // Always assign, even when empty: figma.createFrame() ships with a default
+  // opaque white fill, so a transparent container (empty fillPaints) must clear
+  // it rather than inherit the default white.
+  node.fills = mapPaints(frame.fillPaints);
   const strokes = mapPaints(frame.strokePaints);
   if (strokes.length > 0) {
     node.strokes = strokes;

@@ -20,6 +20,21 @@ export type MockNode = {
   [key: string]: unknown;
 };
 
+// Real `figma.createFrame()` returns a frame pre-filled with an opaque white
+// solid. The builder must clear it for transparent containers, so the mock has
+// to reproduce that default or the test can't see the bug.
+function defaultFrameFills(): Array<unknown> {
+  return [
+    {
+      type: "SOLID",
+      visible: true,
+      opacity: 1,
+      blendMode: "NORMAL",
+      color: { r: 1, g: 1, b: 1 },
+    },
+  ];
+}
+
 function makeNode(type: string): MockNode {
   const node: MockNode = {
     type,
@@ -37,6 +52,9 @@ function makeNode(type: string): MockNode {
       node.height = h;
     },
   } as MockNode;
+  if (type === "FRAME") {
+    node.fills = defaultFrameFills();
+  }
   return node;
 }
 

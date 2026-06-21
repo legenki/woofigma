@@ -57,6 +57,17 @@ describe("buildNodes", () => {
     expect(result.root.y).toBe(6);
   });
 
+  it("clears the default white fill for a transparent frame", async () => {
+    // A transparent container (display:flex/grid, no background) converts to an
+    // empty fillPaints. figma.createFrame() starts with an opaque white fill, so
+    // the builder must overwrite it with [] rather than leave the default.
+    const changes: Array<FigmaNodeChange> = [
+      { ...base(3, 0, "FRAME"), fillPaints: [] } as FigmaNodeChange,
+    ];
+    const result = await buildNodes(changes, 0, "My Import");
+    expect((result.root as { fills?: unknown }).fills).toEqual([]);
+  });
+
   it("ignores the converter's reserved DOCUMENT/CANVAS/root-FRAME scaffold", async () => {
     // Shape of a real @woofigma/dom-to-figma document: DOCUMENT(0) -> CANVAS(1) ->
     // ROOT_FRAME(2), then the user's top-level nodes parented at the root frame
