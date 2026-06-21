@@ -68,6 +68,13 @@ export function createFigmaMock() {
   return {
     createFrame: () => makeNode("FRAME"),
     createText: () => makeNode("TEXT"),
+    createImage: (data: Uint8Array) => {
+      // Tests force the error path by passing bytes that start with 0xFF.
+      if (data[0] === 0xff) {
+        throw new Error("invalid image data");
+      }
+      return { hash: "img-hash" };
+    },
     group: (nodes: Array<MockNode>) => {
       const g = makeNode("GROUP");
       g.children = nodes;
