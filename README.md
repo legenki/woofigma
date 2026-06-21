@@ -76,12 +76,7 @@ The converter handles frames, text, groups, solid + linear-gradient fills,
 drop/inner shadows, corner radius, borders, auto-layout, images, vectors, and
 form placeholders. Fonts load from the fontsource CDN (jsDelivr) by default.
 
-Open edges, roughly by increasing effort:
-
-1. **Raster image fills in the plugin** — wire `figma.createImage` so bitmap
-   fills land as real images on the canvas.
-
-Earlier limitations now resolved:
+All the originally-listed limitations are now resolved:
 
 - **System / generic font names** (`ui-monospace`, `-apple-system`,
   `sans-serif`, `serif`, `monospace`, …) are mapped to fontsource families
@@ -95,6 +90,9 @@ Earlier limitations now resolved:
   load React/ReactDOM/Babel from unpkg at unpack time) now hydrate: the plugin
   manifest's `allowedDomains` includes `https://unpkg.com`, so the nested render
   iframe can fetch them within the plugin CSP.
+- **Raster image fills** — `<img>` elements build real Figma images via
+  `figma.createImage`; the converter's PNG blobs are threaded through to the
+  plugin builder. A failed image keeps its frame and records a warning.
 
 The plugin sandbox is QuickJS, so `code.ts` is transpiled to es2017
 (`?.` / `??` aren't supported there) — see

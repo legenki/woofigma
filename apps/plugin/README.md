@@ -41,8 +41,9 @@ Produces two self-contained artifacts in `apps/plugin/dist/`:
 Frames, text, groups; solid + linear-gradient fills; drop/inner shadows; corner
 radius; borders; auto-layout; fonts via `loadFontAsync` with an Inter fallback.
 
-Not yet handled: images (`createImage`), per-character icon-font glyph
-coverage, and deriving gradient direction from the CSS angle.
+Images build via `figma.createImage` (PNG; a failed image keeps its frame and
+records a warning). Not yet handled: per-character icon-font glyph coverage, and
+deriving gradient direction from the CSS angle.
 
 ## Known limitations (from live Figma testing)
 
