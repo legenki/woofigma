@@ -1,0 +1,87 @@
+{
+  "name": "@figit/dom-to-figma",
+  "version": "0.0.2",
+  "description": "Convert any DOM tree to a Figma clipboard payload, in the browser.",
+  "license": "MIT",
+  "author": "Figit <https://figit.design>",
+  "homepage": "https://github.com/figitdesign/web-to-figma#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/figitdesign/web-to-figma.git",
+    "directory": "packages/dom-to-figma"
+  },
+  "bugs": {
+    "url": "https://github.com/figitdesign/web-to-figma/issues"
+  },
+  "keywords": [
+    "figma",
+    "dom",
+    "html-to-figma",
+    "dom-to-figma",
+    "design-tools",
+    "clipboard",
+    "converter",
+    "browser"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/figma.d.mts",
+        "import": "./dist/figma.mjs"
+      },
+      "./internal": {
+        "types": "./dist/internal.d.mts",
+        "import": "./dist/internal.mjs"
+      }
+    },
+    "main": "./dist/figma.mjs",
+    "types": "./dist/figma.d.mts"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/figma.ts",
+      "import": "./src/figma.ts"
+    },
+    "./internal": {
+      "types": "./src/internal.ts",
+      "import": "./src/internal.ts"
+    }
+  },
+  "main": "./src/figma.ts",
+  "types": "./src/figma.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "check-types": "tsc --noEmit",
+    "lint": "biome check"
+  },
+  "dependencies": {
+    "@figit/fig-kiwi": "workspace:*",
+    "colorjs.io": "^0.6.1",
+    "fontkit": "^2.0.4"
+  },
+  "devDependencies": {
+    "@types/fontkit": "^2.0.9",
+    "@types/node": "catalog:",
+    "@vitest/browser-playwright": "^4.1.5",
+    "happy-dom": "^20.9.0",
+    "playwright": "^1.50.0",
+    "tsdown": "^0.21.0",
+    "typescript": "catalog:",
+    "vitest": "^4.1.5"
+  }
+}

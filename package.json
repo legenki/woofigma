@@ -1,0 +1,30 @@
+{
+  "name": "woofigma",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Import HTML into editable Figma layers — Figma plugin and the DOM-to-Figma conversion stack.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r run build",
+    "dev": "pnpm -r run dev",
+    "test": "pnpm -r run test",
+    "check-types": "pnpm -r run check-types",
+    "lint": "biome check",
+    "format": "biome check --write",
+    "knip": "knip"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.14",
+    "@commitlint/cli": "^20.5.2",
+    "@commitlint/config-conventional": "^20.5.0",
+    "@commitlint/types": "^21.0.1",
+    "knip": "^6.14.1",
+    "lefthook": "^2.1.6",
+    "ultracite": "7.6.3"
+  },
+  "packageManager": "pnpm@10.33.2",
+  "engines": {
+    "node": ">=20"
+  }
+}
