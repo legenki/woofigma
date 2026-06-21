@@ -80,14 +80,20 @@ Open edges, roughly by increasing effort:
 
 1. **Raster image fills in the plugin** — wire `figma.createImage` so bitmap
    fills land as real images on the canvas.
-2. **Bundled / self-unpacking pages vs. CSP** — pages that load React (or
-   similar) from a CDN at runtime hit the plugin's `script-src` CSP. Resolving
-   it means widening the manifest `allowedDomains` to the needed CDNs, or
-   unpacking bundles outside the plugin CSP.
+2. **Web-safe font 404s** — concrete families that fontsource doesn't mirror
+   (e.g. `Arial`, `Tahoma`) still 404 once before the Inter fallback. Generic
+   names are already pre-mapped (below); a web-safe → fontsource alias table
+   would close the remaining gap.
 
-System / generic font names (`ui-monospace`, `-apple-system`, `sans-serif`,
-`serif`, `monospace`, …) are mapped to fontsource families before any CDN
-request, so they no longer 404.
+Two earlier limitations are now resolved:
+
+- **System / generic font names** (`ui-monospace`, `-apple-system`,
+  `sans-serif`, `serif`, `monospace`, …) are mapped to fontsource families
+  before any CDN request, so they no longer 404.
+- **Bundled / self-unpacking pages** (SkillATS-style `dc-runtime` exports that
+  load React/ReactDOM/Babel from unpkg at unpack time) now hydrate: the plugin
+  manifest's `allowedDomains` includes `https://unpkg.com`, so the nested render
+  iframe can fetch them within the plugin CSP.
 
 The plugin sandbox is QuickJS, so `code.ts` is transpiled to es2017
 (`?.` / `??` aren't supported there) — see

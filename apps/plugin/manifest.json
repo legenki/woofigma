@@ -6,7 +6,7 @@
   "main": "dist/code.js",
   "ui": "dist/index.html",
   "networkAccess": {
-    "allowedDomains": ["https://cdn.jsdelivr.net"],
-    "reasoning": "The default font loader fetches webfonts from the fontsource CDN (jsDelivr). Assets referenced by the imported HTML load inside the nested render iframe, which is outside this plugin-UI network scope."
+    "allowedDomains": ["https://cdn.jsdelivr.net", "https://unpkg.com"],
+    "reasoning": "jsDelivr serves the default fontsource webfonts. unpkg.com is where SkillATS-style bundled exports (dc-runtime) load React, ReactDOM, and Babel standalone from at unpack time; without it those script loads hit the plugin CSP and the page fails to hydrate."
   }
 }

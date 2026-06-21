@@ -46,13 +46,13 @@ coverage, and deriving gradient direction from the CSS angle.
 
 ## Known limitations (from live Figma testing)
 
-- **Bundled pages don't unpack.** Self-unpacking exported pages (e.g. SkillATS
-  "Send Test") run an inline script that loads React from `unpkg.com`. Figma's
-  plugin CSP (`script-src ... https://cdn.jsdelivr.net`) blocks that domain, so
-  the unpacker errors and the plugin imports its error banner instead of the
-  page. Static HTML imports correctly. Resolving this means either widening the
-  manifest `allowedDomains` to the CDNs those pages use, or unpacking bundles
-  outside the plugin CSP.
+- **Bundled pages unpack (via `allowedDomains`).** Self-unpacking exported
+  pages (e.g. SkillATS "Send Test" / "Tests List") inline their fonts but load
+  React, ReactDOM, and Babel standalone from `unpkg.com` at unpack time
+  (`dc-runtime`). The manifest's `allowedDomains` now lists `https://unpkg.com`
+  alongside jsDelivr, so the nested render iframe can fetch them within the
+  plugin CSP and the page hydrates before conversion. Confirmed in live Figma
+  testing. Bundles that pin a different CDN would need that host added too.
 - **System fonts resolve to fallbacks.** Generic / system family names
   (`ui-monospace`, `-apple-system`, `system-ui`, `sans-serif`, `serif`,
   `monospace`, …) are mapped to a fontsource family before any CDN request, so
