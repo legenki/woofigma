@@ -2,6 +2,7 @@
 // that maps the converter's in-memory document to the Figma Plugin API. Not part
 // of the public DOM-to-clipboard API surface.
 export type {
+  FigmaBlob,
   FigmaEffect,
   FigmaFrameNodeChange,
   FigmaNodeChange,
