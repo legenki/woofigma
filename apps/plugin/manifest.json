@@ -6,7 +6,7 @@
   "main": "dist/code.js",
   "ui": "dist/index.html",
   "networkAccess": {
-    "allowedDomains": ["https://cdn.jsdelivr.net", "https://unpkg.com"],
-    "reasoning": "jsDelivr serves the default fontsource webfonts. unpkg.com is where SkillATS-style bundled exports (dc-runtime) load React, ReactDOM, and Babel standalone from at unpack time; without it those script loads hit the plugin CSP and the page fails to hydrate."
+    "allowedDomains": ["*"],
+    "reasoning": "[\"*\"] is required for two reasons: (1) loading webfonts from fontsource (jsDelivr) and React/ReactDOM/Babel from unpkg for bundled pages, and (2) the Load-from-URL feature, where the user supplies an arbitrary page URL and an optional CORS proxy — neither host is known ahead of time, so the domains cannot be pre-listed."
   }
 }
