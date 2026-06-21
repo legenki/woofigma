@@ -17,7 +17,12 @@ import { buildBaselines } from "./builders/baselines";
 import { buildCharacterOffsets } from "./builders/character-offsets";
 import { processTextDecorations } from "./builders/decorations";
 import { parseTextProperties } from "./primitives/css/parser";
-import { processGlyphs } from "./primitives/glyph/processor";
+import type { LoadedFont } from "./primitives/font";
+import {
+  collectCodepointsMissingFromFont,
+  processGlyphs,
+  SYMBOL_FALLBACK_FAMILIES,
+} from "./primitives/glyph/processor";
 import { processTextLayout } from "./primitives/layout/processor";
 
 const cssToFigmaTextAlignHorizontalMap: Record<
@@ -278,6 +283,21 @@ export async function nodeToTextNodeChange(
     },
   });
 
+  const missingCodepoints = collectCodepointsMissingFromFont(loadedFont, text);
+  const fallbackFonts: Array<LoadedFont> = [];
+  if (missingCodepoints.size > 0) {
+    for (const family of SYMBOL_FALLBACK_FAMILIES) {
+      try {
+        fallbackFonts.push(
+          await fontCache.get({ family, weight: 400, italic: false })
+        );
+      } catch {
+        // A fallback that fails to load (network/404) is skipped; the chain
+        // continues. One bad fallback never fails the text node.
+      }
+    }
+  }
+
   const glyphs = processGlyphs(
     loadedFont,
     text,
@@ -285,7 +305,8 @@ export async function nodeToTextNodeChange(
       fontSize: styles.fontSize,
       includeWhitespace: true,
     },
-    registerBlob
+    registerBlob,
+    fallbackFonts
   );
 
   const baselines = buildBaselines(
