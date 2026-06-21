@@ -163,4 +163,33 @@ describe("buildNodes", () => {
     // biome-ignore lint/style/noNonNullAssertion: length asserted above
     expect(result.root.children[0]!.type).toBe("TEXT");
   });
+
+  it("builds an image node with an IMAGE fill from a blob", async () => {
+    const changes: Array<FigmaNodeChange> = [
+      {
+        ...base(3, 0, "FRAME"),
+        type: "ROUNDED_RECTANGLE",
+        fillPaints: [
+          {
+            type: "IMAGE",
+            opacity: 1,
+            visible: true,
+            blendMode: "NORMAL",
+            image: { hash: [1, 2, 3], dataBlob: 0 },
+            imageScaleMode: "FILL",
+          },
+        ],
+      } as FigmaNodeChange,
+    ];
+    const result = await buildNodes(changes, 0, "My Import", [
+      { bytes: [10, 20, 30] },
+    ]);
+    expect(result.summary.built).toBe(1);
+    const fills = (result.root as { fills?: Array<{ type: string }> }).fills;
+    expect(fills?.[0]).toMatchObject({
+      type: "IMAGE",
+      imageHash: "img-hash",
+      scaleMode: "FILL",
+    });
+  });
 });
