@@ -41,9 +41,16 @@ changes ripple through the builder.
 3. **`code.ts`** — pass `msg.blobs` into `buildNodes`.
 4. **`build-nodes.ts`** — thread `blobs` (and the existing `warnings` array)
    into `applyFrame` → `mapPaints`.
-5. **`paint-mapper.ts`** — add an IMAGE branch: look up
-   `blobs[paint.image.dataBlob].bytes`, call `figma.createImage(bytes)`, and emit
-   `{ type: 'IMAGE', imageHash: image.hash, scaleMode: 'FILL' }`.
+5. **`paint-mapper.ts`** — add an IMAGE branch: validate `dataBlob`, look up
+   `blobs[dataBlob].bytes`, call `figma.createImage(bytes)`, and emit
+   `{ type: 'IMAGE', imageHash: image.hash, scaleMode: 'FILL' }`. A short comment
+   documents the format boundary:
+
+   ```ts
+   // figma.createImage accepts PNG, JPEG, and GIF. The converter always emits
+   // PNG (it normalizes internally), so that's what we handle here. JPEG would
+   // work unchanged; WebP is not supported by createImage.
+   ```
 
 ## Node type
 
@@ -56,14 +63,24 @@ so rounded images work with no extra code. No `createRectangle` branch.
 Per-paint, not per-node. `figma.createImage` can throw on corrupt/unsupported
 bytes:
 
-- On throw → skip just the image fill; the frame (size, corner radius, other
-  fills) is still built. Append `image fill skipped: <reason>` to
-  `summary.warnings`.
-- If `paint.image.dataBlob` is `undefined` or indexes past `blobs` → same: skip
-  the fill, append a warning.
+- **Index validation first.** Before touching `blobs`, verify the reference:
+  `typeof paint.image.dataBlob === "number"` and
+  `0 <= dataBlob < blobs.length`. If either fails, skip the image fill and push
+  a warning — don't index with an out-of-range or `undefined` value.
+- **On `createImage` throw** → skip just the image fill; the frame (size, corner
+  radius, other fills) is still built. Push a warning.
+- Other (SOLID/GRADIENT) fills on the same node are kept; other nodes are
+  unaffected. This matches the existing per-node `try/catch` philosophy in
+  `buildNodes`, one level finer.
 
-Other nodes are unaffected. This matches the existing per-node `try/catch`
-philosophy in `buildNodes`, one level finer.
+**Warning format.** Include the node name and the blob index so the warning is
+actionable, e.g.:
+
+- `"<name>": image fill skipped (bad blob index 5 of 3)` — validation failure.
+- `"<name>": image fill skipped (<error message>, blob 2)` — createImage threw.
+
+The node name is available as `change.name` where `applyFrame` is called, so it
+is threaded into the paint context (or passed alongside `warnings`).
 
 ## Signature shape
 
@@ -73,12 +90,14 @@ To avoid a sprawling parameter list, `mapPaints` takes a small context:
 type PaintContext = {
   blobs: Array<{ bytes: Uint8Array }>;
   warnings: Array<string>;
+  nodeName: string; // for actionable warning messages
 };
 mapPaints(paints, ctx): Array<Paint>
 ```
 
-`applyFrame` receives `blobs` + `warnings` and forwards the context. SOLID and
-GRADIENT_LINEAR branches ignore the context (unchanged behavior).
+`applyFrame` builds the context from `change.name` plus the threaded
+`blobs`/`warnings` and forwards it. SOLID and GRADIENT_LINEAR branches ignore the
+context (unchanged behavior).
 
 ## Files
 
@@ -88,7 +107,10 @@ GRADIENT_LINEAR branches ignore the context (unchanged behavior).
 - `apps/plugin/src/builder/build-nodes.ts` — thread `blobs`/`warnings` to
   `applyFrame`/`mapPaints`.
 - `apps/plugin/src/builder/paint-mapper.ts` — IMAGE branch + context param.
-- `apps/plugin/src/builder/figma-mock.ts` — add a `createImage` stub for tests.
+- `apps/plugin/src/builder/figma-mock.ts` — add a `createImage` stub returning
+  `{ hash: "img-hash" }`. It must support being made to throw (e.g. a per-test
+  override or a sentinel byte) so test case 2 (createImage throwing) can be
+  written.
 
 The converter (`@woofigma/dom-to-figma`) is **not** touched.
 
