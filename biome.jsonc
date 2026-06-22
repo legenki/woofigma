@@ -65,6 +65,12 @@
       "javascript": {
         "globals": ["figma", "__html__"]
       }
+    },
+    {
+      "includes": ["apps/plugin/extension/**"],
+      "javascript": {
+        "globals": ["chrome"]
+      }
     }
   ]
 }
