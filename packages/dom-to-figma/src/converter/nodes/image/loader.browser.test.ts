@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { decodeImageBytes, processImageFile } from "./loader";
+import { decodeImageBytes, processImageFile, sha1Bytes } from "./loader";
+
+function utf8(s: string): Uint8Array {
+  return new TextEncoder().encode(s);
+}
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -47,5 +51,44 @@ describe("convertToPng via processImageFile", () => {
     expect(info.bytes.length).toBeGreaterThan(8);
     // PNG magic in the re-encoded output.
     expect(info.bytes.slice(0, 4)).toEqual([0x89, 0x50, 0x4e, 0x47]);
+  });
+});
+
+describe("sha1Bytes", () => {
+  it("matches the standard SHA-1 of 'abc'", () => {
+    expect(sha1Bytes(utf8("abc"))).toEqual([
+      0xa9, 0x99, 0x3e, 0x36, 0x47, 0x06, 0x81, 0x6a, 0xba, 0x3e, 0x25, 0x71,
+      0x78, 0x50, 0xc2, 0x6c, 0x9c, 0xd0, 0xd8, 0x9d,
+    ]);
+  });
+
+  it("hashes the empty input", () => {
+    expect(sha1Bytes(utf8(""))).toEqual([
+      0xda, 0x39, 0xa3, 0xee, 0x5e, 0x6b, 0x4b, 0x0d, 0x32, 0x55, 0xbf, 0xef,
+      0x95, 0x60, 0x18, 0x90, 0xaf, 0xd8, 0x07, 0x09,
+    ]);
+  });
+});
+
+describe("processImageFile without crypto.subtle", () => {
+  it("hashes a PNG even when crypto.subtle is undefined", async () => {
+    // Reproduce the Figma iframe: no SubtleCrypto.
+    vi.stubGlobal("crypto", {});
+    const png = await decodeImageBytes(
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+    );
+    const info = await processImageFile(png);
+    expect(info.hash).toHaveLength(20);
+    expect(info.bytes.slice(0, 4)).toEqual([0x89, 0x50, 0x4e, 0x47]);
+  });
+});
+
+describe("undecodable image isolation", () => {
+  it("rejects (does not hang) on garbage image bytes", async () => {
+    const garbage = {
+      bytes: new Uint8Array([1, 2, 3, 4]).buffer,
+      mimeType: "image/avif",
+    };
+    await expect(processImageFile(garbage)).rejects.toBeDefined();
   });
 });
