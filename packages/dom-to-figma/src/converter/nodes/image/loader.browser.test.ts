@@ -50,7 +50,9 @@ describe("convertToPng via processImageFile", () => {
     const info = await processImageFile(webp);
     expect(info.bytes.length).toBeGreaterThan(8);
     // PNG magic in the re-encoded output.
-    expect(info.bytes.slice(0, 4)).toEqual([0x89, 0x50, 0x4e, 0x47]);
+    expect(info.bytes.slice(0, 4)).toEqual(
+      new Uint8Array([0x89, 0x50, 0x4e, 0x47])
+    );
   });
 });
 
@@ -79,7 +81,9 @@ describe("processImageFile without crypto.subtle", () => {
     );
     const info = await processImageFile(png);
     expect(info.hash).toHaveLength(20);
-    expect(info.bytes.slice(0, 4)).toEqual([0x89, 0x50, 0x4e, 0x47]);
+    expect(info.bytes.slice(0, 4)).toEqual(
+      new Uint8Array([0x89, 0x50, 0x4e, 0x47])
+    );
   });
 });
 
@@ -100,7 +104,9 @@ describe("convertToPng SVG fallback", () => {
     )}`;
     const file = await decodeImageBytes(svg);
     const info = await processImageFile(file);
-    expect(info.bytes.slice(0, 4)).toEqual([0x89, 0x50, 0x4e, 0x47]);
+    expect(info.bytes.slice(0, 4)).toEqual(
+      new Uint8Array([0x89, 0x50, 0x4e, 0x47])
+    );
     expect(info.bytes.length).toBeGreaterThan(8);
   });
 });

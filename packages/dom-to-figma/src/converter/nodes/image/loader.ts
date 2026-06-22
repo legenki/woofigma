@@ -26,7 +26,7 @@ export type ImageLoader = (request: ImageRequest) => Promise<ImageFile>;
  * and the content type.
  */
 export async function decodeImageBytes(src: string): Promise<ImageFile> {
-  const dataMatch = /^data:([^;,]+)(;base64)?,(.*)$/s.exec(src);
+  const dataMatch = /^data:([^;,]*)(;base64)?,(.*)$/s.exec(src);
   if (dataMatch) {
     const mimeType = dataMatch[1] || "application/octet-stream";
     const isBase64 = dataMatch[2] === ";base64";
@@ -53,7 +53,7 @@ export type ImageBlobInfo = {
   /** SHA-1 of the (possibly re-encoded) bytes — Figma's blob identifier. */
   hash: Array<number>;
   /** Bytes ready for Figma blob registration (PNG/JPEG/GIF). */
-  bytes: Array<number>;
+  bytes: Uint8Array;
 };
 
 const FIGMA_SUPPORTED_FORMATS = [
@@ -82,6 +82,23 @@ export function createDirectImageLoader(): ImageLoader {
 export async function processImageFile(
   file: ImageFile
 ): Promise<ImageBlobInfo> {
+  if (file.bytes.byteLength === 0) {
+    // Return a 1x1 transparent PNG if the image is empty
+    const transparentPng = new Uint8Array([
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
+      0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+      0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4, 0x89, 0x00, 0x00, 0x00,
+      0x0b, 0x49, 0x44, 0x41, 0x54, 0x08, 0xd7, 0x63, 0x60, 0x00, 0x02, 0x00,
+      0x00, 0x05, 0x00, 0x01, 0xe2, 0x26, 0x05, 0x9b, 0x00, 0x00, 0x00, 0x00,
+      0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
+    ]);
+    const hash = sha1(transparentPng.buffer);
+    return {
+      hash,
+      bytes: transparentPng,
+    };
+  }
+
   const finalBytes = isFigmaSupportedFormat(file.mimeType)
     ? file.bytes
     : await convertToPng(file);
@@ -89,7 +106,7 @@ export async function processImageFile(
   const hash = sha1(finalBytes);
   return {
     hash,
-    bytes: Array.from(new Uint8Array(finalBytes)),
+    bytes: new Uint8Array(finalBytes),
   };
 }
 
