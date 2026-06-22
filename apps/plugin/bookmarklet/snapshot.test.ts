@@ -2,35 +2,59 @@
 import { describe, expect, it } from "vitest";
 import { buildSnapshotHtml } from "./snapshot.js";
 
-// Inject a deterministic getStyle so the test doesn't rely on happy-dom's
-// (incomplete) computed styles. Returns a fixed map for every element.
-function fakeGetStyle(): Record<string, string> {
-  return {
-    color: "rgb(1, 2, 3)",
-    "padding-top": "10px",
-    cursor: "pointer", // not in the whitelist — must be dropped
-    "z-index": "5", // not in the whitelist — must be dropped
+// Inject a deterministic, iterable getStyle (length + indices + getPropertyValue),
+// matching the shape of a real CSSStyleDeclaration, so the test exercises the
+// computed-declaration loop without relying on happy-dom's computed styles.
+function makeStyle(map: Record<string, string>) {
+  const keys = Object.keys(map);
+  const decl: Record<string, unknown> = {
+    length: keys.length,
+    getPropertyValue: (p: string) => map[p] ?? "",
+    [Symbol.iterator]: () => keys[Symbol.iterator](),
   };
+  keys.forEach((k, i) => {
+    decl[i] = k;
+  });
+  return decl as unknown as CSSStyleDeclaration;
 }
 
-function getStyle(_el: Element) {
-  const map = fakeGetStyle();
-  return { getPropertyValue: (p: string) => map[p] ?? "" };
+function getStyle(_el: Element): CSSStyleDeclaration {
+  return makeStyle({
+    color: "rgb(1, 2, 3)",
+    width: "100px",
+    "flex-direction": "column",
+    gap: "20px",
+    "justify-content": "center",
+    "grid-template-columns": "1fr 1fr",
+    transform: "translateX(5px)",
+    cursor: "pointer", // blacklisted — must be dropped
+    content: '"x"', // blacklisted — must be dropped
+    "animation-name": "spin", // blacklisted — must be dropped
+    "transition-duration": "1s", // blacklisted — must be dropped
+  });
 }
 
 describe("buildSnapshotHtml", () => {
-  it("inlines whitelisted properties onto elements", () => {
+  it("inlines layout-critical properties onto elements", () => {
     document.body.innerHTML = "<div id='x'>hi</div>";
     const html = buildSnapshotHtml(document.documentElement, getStyle);
-    expect(html).toContain("color: rgb(1, 2, 3)");
-    expect(html).toContain("padding-top: 10px");
+    expect(html).toContain("width: 100px");
+    expect(html).toContain("flex-direction: column");
+    expect(html).toContain("gap: 20px");
+    expect(html).toContain("justify-content: center");
+    expect(html).toContain("grid-template-columns: 1fr 1fr");
+    expect(html).toContain("transform: translateX(5px)");
   });
 
-  it("does not inline non-whitelisted properties", () => {
+  it("does not inline blacklisted properties", () => {
     document.body.innerHTML = "<div>hi</div>";
     const html = buildSnapshotHtml(document.documentElement, getStyle);
     expect(html).not.toContain("cursor");
-    expect(html).not.toContain("z-index");
+    expect(html).not.toContain("animation-name");
+    expect(html).not.toContain("transition-duration");
+    // "content:" would substring-collide with "justify-content:", so match the
+    // declaration boundary instead.
+    expect(html).not.toMatch(/[;"]\s*content:/);
   });
 
   it("strips <script> and <noscript>", () => {

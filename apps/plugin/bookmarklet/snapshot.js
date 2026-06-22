@@ -1,68 +1,37 @@
-// Snapshot bookmarklet source. Captures a page's live (post-JS) DOM, inlines the
-// CSS properties the converter reads, strips scripts, and downloads/copies a
-// self-contained .html for the Woofigma plugin.
+// Snapshot bookmarklet source. Captures a page's live (post-JS) DOM, inlines its
+// computed styles (so it re-renders identically), strips scripts, and
+// downloads/copies a self-contained .html for the Woofigma plugin.
 //
-// SNAPSHOT_STYLE_PROPS must stay in sync with the properties the converter reads
-// in packages/dom-to-figma/src/converter. A guard test
-// (snapshot-whitelist.test.ts) fails the build if the converter starts reading a
-// property missing here.
-export const SNAPSHOT_STYLE_PROPS = [
-  "color",
-  "font-family",
-  "font-size",
-  "font-style",
-  "font-weight",
-  "line-height",
-  "letter-spacing",
-  "word-spacing",
-  "text-align",
-  "text-decoration-line",
-  "text-transform",
-  "white-space",
-  "background",
-  "background-color",
-  "background-image",
-  "background-clip",
-  "opacity",
-  "display",
-  "position",
-  "overflow",
-  "overflow-x",
-  "overflow-y",
-  "box-shadow",
-  "filter",
-  "backdrop-filter",
-  "clip",
-  "padding",
-  "padding-top",
-  "padding-right",
-  "padding-bottom",
-  "padding-left",
-  "border-width",
-  "border-color",
-  "border-top-width",
-  "border-right-width",
-  "border-bottom-width",
-  "border-left-width",
-  "border-top-color",
-  "border-right-color",
-  "border-bottom-color",
-  "border-left-color",
-  "border-top-left-radius",
-  "border-top-right-radius",
-  "border-bottom-left-radius",
-  "border-bottom-right-radius",
-  "fill",
-  "fill-opacity",
-  "fill-rule",
-  "stroke",
-  "stroke-width",
-  "stroke-opacity",
-  "stroke-dasharray",
-  "stroke-linecap",
-  "stroke-linejoin",
-  "clip-rule",
-];
+// CSS properties NOT inlined into the snapshot. Everything else getComputedStyle
+// reports is inlined so the re-rendered snapshot lays out identically. These are
+// excluded because they break re-rendering or are pure noise. getComputedStyle
+// enumerates longhands (not shorthands), so the animation/transition longhands
+// are listed individually. A guard test (snapshot-whitelist.test.ts) fails the
+// build if the converter ever reads a property listed here.
+export const SNAPSHOT_SKIP_PROPS = new Set([
+  "content",
+  "cursor",
+  "will-change",
+  "contain",
+  "content-visibility",
+  "inline-size",
+  "block-size",
+  "animation",
+  "animation-name",
+  "animation-duration",
+  "animation-delay",
+  "animation-direction",
+  "animation-fill-mode",
+  "animation-iteration-count",
+  "animation-play-state",
+  "animation-timeline",
+  "animation-timing-function",
+  "transition",
+  "transition-property",
+  "transition-duration",
+  "transition-delay",
+  "transition-timing-function",
+]);
 
 // Recursively copy whitelisted computed styles from `original` onto `clone`,
 // walking element children in lockstep. `getStyle(el)` returns an object with a
@@ -72,7 +41,11 @@ export const SNAPSHOT_STYLE_PROPS = [
 function inlineStyles(original, clone, getStyle) {
   const computed = getStyle(original);
   const decls = [];
-  for (const prop of SNAPSHOT_STYLE_PROPS) {
+  // A real CSSStyleDeclaration is iterable over its property names.
+  for (const prop of computed) {
+    if (SNAPSHOT_SKIP_PROPS.has(prop)) {
+      continue;
+    }
     const value = computed.getPropertyValue(prop);
     if (value) {
       decls.push(`${prop}: ${value}`);
