@@ -1,11 +1,27 @@
 import type { FigmaPaint } from "@woofigma/dom-to-figma/internal";
 
-// Figma's GradientPaint requires a gradientTransform; a top-to-bottom default
-// is used for V1. Deriving the real direction from the CSS angle is future work.
+// Fallback gradient transform (identity → top-to-bottom), used only when a
+// gradient paint carries no transform. The converter normally computes the real
+// direction from the CSS angle and sets it on the paint.
 const DEFAULT_GRADIENT_TRANSFORM = [
   [1, 0, 0],
   [0, 1, 0],
 ];
+
+// The converter stores a gradient transform as an object; Figma wants a matrix.
+function toFigmaTransform(t: {
+  m00: number;
+  m01: number;
+  m02: number;
+  m10: number;
+  m11: number;
+  m12: number;
+}): Transform {
+  return [
+    [t.m00, t.m01, t.m02],
+    [t.m10, t.m11, t.m12],
+  ];
+}
 
 export type PaintContext = {
   blobs: Array<{ bytes: Array<number> }>;
@@ -33,7 +49,9 @@ export function mapPaints(
     } else if (p.type === "GRADIENT_LINEAR") {
       out.push({
         type: "GRADIENT_LINEAR",
-        gradientTransform: DEFAULT_GRADIENT_TRANSFORM as Transform,
+        gradientTransform: p.transform
+          ? toFigmaTransform(p.transform)
+          : (DEFAULT_GRADIENT_TRANSFORM as Transform),
         gradientStops: p.stops.map((s) => ({
           position: s.position,
           color: { r: s.color.r, g: s.color.g, b: s.color.b, a: s.color.a },

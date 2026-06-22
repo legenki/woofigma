@@ -70,6 +70,51 @@ describe("mapPaints", () => {
       (out[0] as unknown as { gradientStops: Array<unknown> }).gradientStops
     ).toHaveLength(2);
   });
+
+  it("uses the paint's transform for the gradient direction", () => {
+    const paints: Array<FigmaPaint> = [
+      {
+        type: "GRADIENT_LINEAR",
+        stops: [
+          { color: { r: 1, g: 0, b: 0, a: 1 }, position: 0 },
+          { color: { r: 0, g: 0, b: 1, a: 1 }, position: 1 },
+        ],
+        opacity: 1,
+        visible: true,
+        blendMode: "NORMAL",
+        transform: { m00: 0, m01: -1, m02: 1, m10: 1, m11: 0, m12: 0 },
+      } as FigmaPaint,
+    ];
+    const out = mapPaints(paints, ctx());
+    expect(
+      (out[0] as unknown as { gradientTransform: unknown }).gradientTransform
+    ).toEqual([
+      [0, -1, 1],
+      [1, 0, 0],
+    ]);
+  });
+
+  it("falls back to the identity transform when the paint has none", () => {
+    const paints: Array<FigmaPaint> = [
+      {
+        type: "GRADIENT_LINEAR",
+        stops: [
+          { color: { r: 1, g: 0, b: 0, a: 1 }, position: 0 },
+          { color: { r: 0, g: 0, b: 1, a: 1 }, position: 1 },
+        ],
+        opacity: 1,
+        visible: true,
+        blendMode: "NORMAL",
+      },
+    ];
+    const out = mapPaints(paints, ctx());
+    expect(
+      (out[0] as unknown as { gradientTransform: unknown }).gradientTransform
+    ).toEqual([
+      [1, 0, 0],
+      [0, 1, 0],
+    ]);
+  });
 });
 
 describe("mapPaints IMAGE handling", () => {
