@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { SNAPSHOT_STYLE_PROPS } from "./snapshot.js";
+import { SNAPSHOT_SKIP_PROPS } from "./snapshot.js";
 
 const CONVERTER_ROOT = join(
   import.meta.dirname,
@@ -40,10 +40,21 @@ function converterReadProps(): Set<string> {
   return props;
 }
 
-describe("snapshot whitelist", () => {
-  it("covers every CSS property the converter reads", () => {
-    const whitelist = new Set(SNAPSHOT_STYLE_PROPS);
-    const missing = [...converterReadProps()].filter((p) => !whitelist.has(p));
-    expect(missing).toEqual([]);
+// Guards the snapshot blacklist (SNAPSHOT_SKIP_PROPS), not a whitelist: the
+// snapshot now inlines everything except the blacklist, so the converter's read
+// properties must never be blacklisted, and layout-critical props must stay out
+// of the blacklist.
+describe("snapshot blacklist", () => {
+  it("never blacklists a property the converter reads", () => {
+    const blacklisted = [...converterReadProps()].filter((p) =>
+      SNAPSHOT_SKIP_PROPS.has(p)
+    );
+    expect(blacklisted).toEqual([]);
+  });
+
+  it("keeps layout-critical properties out of the blacklist", () => {
+    expect(SNAPSHOT_SKIP_PROPS.has("display")).toBe(false);
+    expect(SNAPSHOT_SKIP_PROPS.has("width")).toBe(false);
+    expect(SNAPSHOT_SKIP_PROPS.has("flex-direction")).toBe(false);
   });
 });
