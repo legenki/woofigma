@@ -1,12 +1,12 @@
 import { createFigmaConverter } from "@woofigma/dom-to-figma";
 import type { FigmaNodeChange } from "@woofigma/dom-to-figma/internal";
+import { computeLoadTimeout } from "./render-timeout";
 
 // Heuristic delay after `load` for bundled pages to finish unpacking into the
 // DOM. 400ms covers the exported files tested so far; hydration-heavy pages may
 // need more. Future work: replace with a MutationObserver + requestIdleCallback
 // settle detector.
 const STABILIZE_MS = 400;
-const LOAD_TIMEOUT_MS = 10_000;
 // Generous viewport so wide/tall pages aren't clipped before measurement.
 // Default render width (Macbook preset). Callers override per screen-size choice.
 const DEFAULT_RENDER_WIDTH = 1440;
@@ -59,7 +59,7 @@ function writeAndWait(iframe: HTMLIFrameElement, html: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(
       () => reject(new Error("Render timed out")),
-      LOAD_TIMEOUT_MS
+      computeLoadTimeout(html.length)
     );
     iframe.addEventListener(
       "load",
