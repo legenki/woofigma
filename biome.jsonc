@@ -6,9 +6,11 @@
       "!**/dist",
       "!**/node_modules",
       "!**/coverage",
-      // Generated, minified bundle for the Chrome extension (built from
-      // extension/content-entry.js). Not hand-edited; excluded from lint/format.
-      "!**/extension/content.js"
+      // Vendored SingleFile Chrome extension (github.com/gildas-lormeau/SingleFile).
+      // Third-party, not hand-edited; excluded from lint/format.
+      "!**/extension/lib",
+      "!**/extension/src",
+      "!**/extension/_locales"
     ]
   },
   "linter": {

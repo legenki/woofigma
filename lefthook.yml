@@ -3,7 +3,11 @@ pre-commit:
   commands:
     biome:
       glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
-      run: pnpm exec biome check --diagnostic-level=error --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
+      # Drop staged paths that no longer exist (deletions/renames) before
+      # passing to biome, which errors trying to read a missing file.
+      run: |
+        files=$(printf '%s\n' {staged_files} | while IFS= read -r f; do [ -f "$f" ] && printf '%s\n' "$f"; done)
+        [ -z "$files" ] || pnpm exec biome check --diagnostic-level=error --no-errors-on-unmatched --files-ignore-unknown=true --colors=off $files
 
 commit-msg:
   commands:
