@@ -63,3 +63,41 @@ export const SNAPSHOT_STYLE_PROPS = [
   "stroke-linejoin",
   "clip-rule",
 ];
+
+// Recursively copy whitelisted computed styles from `original` onto `clone`,
+// walking element children in lockstep. `getStyle(el)` returns an object with a
+// `getPropertyValue(prop)` method (real getComputedStyle in the bookmarklet, a
+// stub in tests). Shadow roots are not traversed; nothing here throws on a
+// shadow host because we only read light-DOM `children`.
+function inlineStyles(original, clone, getStyle) {
+  const computed = getStyle(original);
+  const decls = [];
+  for (const prop of SNAPSHOT_STYLE_PROPS) {
+    const value = computed.getPropertyValue(prop);
+    if (value) {
+      decls.push(`${prop}: ${value}`);
+    }
+  }
+  if (decls.length > 0) {
+    clone.setAttribute("style", decls.join("; "));
+  }
+  const originalChildren = original.children;
+  const cloneChildren = clone.children;
+  for (let i = 0; i < originalChildren.length; i += 1) {
+    inlineStyles(originalChildren[i], cloneChildren[i], getStyle);
+  }
+}
+
+// Build a self-contained HTML document string from a live document element.
+// `getStyle` defaults to window.getComputedStyle in the browser.
+export function buildSnapshotHtml(
+  documentElement,
+  getStyle = (el) => globalThis.getComputedStyle(el)
+) {
+  const clone = documentElement.cloneNode(true);
+  inlineStyles(documentElement, clone, getStyle);
+  for (const el of clone.querySelectorAll("script, noscript")) {
+    el.remove();
+  }
+  return `<!doctype html>\n${clone.outerHTML}`;
+}
