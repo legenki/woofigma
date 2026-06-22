@@ -2,7 +2,14 @@
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "extends": ["ultracite/biome/core"],
   "files": {
-    "includes": ["!**/dist", "!**/node_modules", "!**/coverage"]
+    "includes": [
+      "!**/dist",
+      "!**/node_modules",
+      "!**/coverage",
+      // Generated, minified bundle for the Chrome extension (built from
+      // extension/content-entry.js). Not hand-edited; excluded from lint/format.
+      "!**/extension/content.js"
+    ]
   },
   "linter": {
     "rules": {
