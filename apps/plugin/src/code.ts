@@ -29,6 +29,8 @@ figma.ui.onmessage = async (msg: UiToCode) => {
       }
     );
     figma.currentPage.appendChild(root);
+    root.x = figma.viewport.center.x - root.width / 2;
+    root.y = figma.viewport.center.y - root.height / 2;
     figma.viewport.scrollAndZoomIntoView([root]);
     const done: CodeToUi = {
       type: "import-done",
