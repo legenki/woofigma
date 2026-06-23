@@ -75,10 +75,11 @@ export function createDirectImageLoader(): ImageLoader {
   return async ({ src, element }) => {
     if (element.tagName.toLowerCase() === "video") {
       const video = element as HTMLVideoElement;
-      
+
       // Try to use the video's poster if the video hasn't loaded data
-      if (video.readyState < 2 && video.poster) { // HAVE_CURRENT_DATA
-         return decodeImageBytes(video.poster);
+      if (video.readyState < 2 && video.poster) {
+        // HAVE_CURRENT_DATA
+        return decodeImageBytes(video.poster);
       }
 
       try {
@@ -89,27 +90,25 @@ export function createDirectImageLoader(): ImageLoader {
         if (ctx) {
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           const dataUrl = canvas.toDataURL("image/png");
-          
+
           // If canvas is empty and we have a poster, fallback to poster
-          if (dataUrl === "data:," || dataUrl.length < 100) {
-            if (video.poster) {
-              return decodeImageBytes(video.poster);
-            }
+          if ((dataUrl === "data:," || dataUrl.length < 100) && video.poster) {
+            return decodeImageBytes(video.poster);
           }
           return decodeImageBytes(dataUrl);
         }
       } catch (e) {
         console.warn("Failed to capture video frame (CORS or other error):", e);
       }
-      
+
       if (video.poster) {
-         try {
-           return await decodeImageBytes(video.poster);
-         } catch (e) {
-           // ignore
-         }
+        try {
+          return await decodeImageBytes(video.poster);
+        } catch (e) {
+          // ignore
+        }
       }
-      
+
       return { bytes: new ArrayBuffer(0), mimeType: "image/png" };
     }
     return decodeImageBytes(src);

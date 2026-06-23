@@ -7,6 +7,7 @@ export type UiToCode =
       rootName: string;
       blobs: Array<{ bytes: Array<number> }>;
     }
+  | { type: "FETCH_CORS"; url: string }
   | { type: "cancel" };
 
 export type CodeToUi =
@@ -24,4 +25,6 @@ export type CodeToUi =
       built?: number;
       total?: number;
     }
-  | { type: "import-error"; message: string };
+  | { type: "import-error"; message: string }
+  | { type: "FETCH_CORS_RESULT"; url: string; buffer: Uint8Array }
+  | { type: "FETCH_CORS_ERROR"; url: string; message: string };

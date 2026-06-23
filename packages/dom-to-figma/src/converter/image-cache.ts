@@ -10,7 +10,11 @@ export type ImageCache = DedupCache<
 export function createImageCache(imageLoader: ImageLoader): ImageCache {
   return new DedupCache({
     load: (element) =>
-      imageLoader({ src: (element as any).src || (element as any).currentSrc, element }).then(processImageFile),
-    toCacheKey: (element) => (element as any).src || (element as any).currentSrc || "video-no-src",
+      imageLoader({
+        src: (element as any).src || (element as any).currentSrc,
+        element,
+      }).then(processImageFile),
+    toCacheKey: (element) =>
+      (element as any).src || (element as any).currentSrc || "video-no-src",
   });
 }

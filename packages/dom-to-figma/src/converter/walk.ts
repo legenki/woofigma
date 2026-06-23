@@ -187,15 +187,21 @@ async function walkPseudoElement(
   ctx: WalkContext
 ): Promise<boolean> {
   const style = window.getComputedStyle(element, pseudoElt);
-  if (style.display === "none") return false;
+  if (style.display === "none") {
+    return false;
+  }
 
   let x = 0;
   let y = 0;
   if (style.position === "absolute") {
     const leftStr = style.left;
     const topStr = style.top;
-    if (leftStr !== "auto") x = (Number.parseFloat(leftStr) || 0);
-    if (topStr !== "auto") y = (Number.parseFloat(topStr) || 0);
+    if (leftStr !== "auto") {
+      x = Number.parseFloat(leftStr) || 0;
+    }
+    if (topStr !== "auto") {
+      y = Number.parseFloat(topStr) || 0;
+    }
   }
   const position = { x, y };
 

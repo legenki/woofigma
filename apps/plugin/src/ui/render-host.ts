@@ -1,4 +1,8 @@
-import { createFigmaConverter } from "@wooframe/dom-to-figma";
+import type { ImageFile, ImageRequest } from "@wooframe/dom-to-figma";
+import {
+  createDirectImageLoader,
+  createFigmaConverter,
+} from "@wooframe/dom-to-figma";
 import type { FigmaNodeChange } from "@wooframe/dom-to-figma/internal";
 import { computeLoadTimeout } from "./render-timeout";
 
@@ -20,13 +24,85 @@ export type RenderResult = {
   blobs: Array<{ bytes: Array<number> }>;
 };
 
+function fetchCorsVideoAsObjectURL(url: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const handler = (event: MessageEvent) => {
+      const msg = event.data.pluginMessage;
+      if (msg && msg.type === "FETCH_CORS_RESULT" && msg.url === url) {
+        window.removeEventListener("message", handler);
+        const blob = new Blob([msg.buffer], { type: "video/mp4" });
+        resolve(URL.createObjectURL(blob));
+      } else if (msg && msg.type === "FETCH_CORS_ERROR" && msg.url === url) {
+        window.removeEventListener("message", handler);
+        reject(new Error(msg.message));
+      }
+    };
+    window.addEventListener("message", handler);
+    parent.postMessage({ pluginMessage: { type: "FETCH_CORS", url } }, "*");
+  });
+}
+
+const defaultImageLoader = createDirectImageLoader();
+
+const customImageLoader = async (request: ImageRequest): Promise<ImageFile> => {
+  const { element, src } = request;
+  if (element.tagName.toLowerCase() === "video") {
+    const video = element as HTMLVideoElement;
+    try {
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth || video.clientWidth || 300;
+      canvas.height = video.videoHeight || video.clientHeight || 150;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL("image/png"); // Throws if cross-origin without CORS
+        if (dataUrl !== "data:," && dataUrl.length > 100) {
+          const res = await fetch(dataUrl);
+          const buffer = await res.arrayBuffer();
+          return { bytes: buffer, mimeType: "image/png" };
+        }
+      }
+    } catch (e) {
+      console.log("CORS error, trying main thread proxy for video:", src);
+      try {
+        const objectUrl = await fetchCorsVideoAsObjectURL(
+          video.currentSrc || video.src || src
+        );
+        const proxyVideo = document.createElement("video");
+        proxyVideo.src = objectUrl;
+        proxyVideo.muted = true;
+        proxyVideo.playsInline = true;
+        proxyVideo.preload = "auto";
+        await new Promise((resolve, reject) => {
+          proxyVideo.onloadeddata = resolve;
+          proxyVideo.onerror = reject;
+        });
+        const canvas = document.createElement("canvas");
+        canvas.width = proxyVideo.videoWidth || video.clientWidth || 300;
+        canvas.height = proxyVideo.videoHeight || video.clientHeight || 150;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(proxyVideo, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL("image/png");
+          const res = await fetch(dataUrl);
+          const buffer = await res.arrayBuffer();
+          return { bytes: buffer, mimeType: "image/png" };
+        }
+      } catch (err) {
+        console.warn("Proxy video failed", err);
+      }
+    }
+  }
+  return defaultImageLoader(request);
+};
+
 export async function renderAndConvert(
   html: string,
   rootName: string,
   width: number = DEFAULT_RENDER_WIDTH
 ): Promise<RenderResult> {
   const iframe = document.createElement("iframe");
-  iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
+  iframe.sandbox.add("allow-scripts", "allow-same-origin");
   iframe.style.cssText = `position:fixed;left:-99999px;top:0;width:${width}px;height:${RENDER_HEIGHT}px;border:0;visibility:hidden`;
   document.body.appendChild(iframe);
 
@@ -40,7 +116,7 @@ export async function renderAndConvert(
     const width = Math.max(1, Math.round(doc.documentElement.scrollWidth));
     const height = Math.max(1, Math.round(doc.documentElement.scrollHeight));
 
-    const converter = createFigmaConverter();
+    const converter = createFigmaConverter({ imageLoader: customImageLoader });
     const result = await converter.convert({
       element: body,
       width,
@@ -88,14 +164,18 @@ function writeAndWait(iframe: HTMLIFrameElement, html: string): Promise<void> {
 }
 
 async function waitForMedia(doc: Document | null): Promise<void> {
-  if (!doc) return;
+  if (!doc) {
+    return;
+  }
   const videos = Array.from(doc.querySelectorAll("video"));
   const images = Array.from(doc.querySelectorAll("img"));
 
   const promises: Promise<void>[] = [];
 
   for (const video of videos) {
-    if (video.readyState >= 2) continue; // HAVE_CURRENT_DATA
+    if (video.readyState >= 2) {
+      continue; // HAVE_CURRENT_DATA
+    }
     promises.push(
       new Promise<void>((resolve) => {
         const onData = () => {
@@ -113,7 +193,9 @@ async function waitForMedia(doc: Document | null): Promise<void> {
   }
 
   for (const img of images) {
-    if (img.complete) continue;
+    if (img.complete) {
+      continue;
+    }
     promises.push(
       new Promise<void>((resolve) => {
         const onData = () => {

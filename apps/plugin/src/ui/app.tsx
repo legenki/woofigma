@@ -55,18 +55,23 @@ export function App() {
         setStatus(`Import failed: ${msg.message}`);
         return;
       }
-      setIsError(false);
-      const parts = [`Built ${msg.built} of ${msg.total} layers.`];
-      if (msg.skipped) {
-        parts.push(`Skipped ${msg.skipped}.`);
+      if (msg.type === "FETCH_CORS_RESULT" || msg.type === "FETCH_CORS_ERROR") {
+        return;
       }
-      if (msg.missingFonts.length) {
-        parts.push(`Missing fonts: ${msg.missingFonts.join(", ")}.`);
+      if (msg.type === "import-done") {
+        setIsError(false);
+        const parts = [`Built ${msg.built} of ${msg.total} layers.`];
+        if (msg.skipped) {
+          parts.push(`Skipped ${msg.skipped}.`);
+        }
+        if (msg.missingFonts.length) {
+          parts.push(`Missing fonts: ${msg.missingFonts.join(", ")}.`);
+        }
+        if (msg.warnings.length) {
+          parts.push(`${msg.warnings.length} warning(s).`);
+        }
+        setStatus(parts.join(" "));
       }
-      if (msg.warnings.length) {
-        parts.push(`${msg.warnings.length} warning(s).`);
-      }
-      setStatus(parts.join(" "));
     }
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);

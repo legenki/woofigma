@@ -9,6 +9,27 @@ figma.ui.onmessage = async (msg: UiToCode) => {
     figma.closePlugin();
     return;
   }
+  if (msg.type === "FETCH_CORS") {
+    try {
+      const response = await fetch(msg.url);
+      if (!response.ok) {
+        throw new Error("HTTP " + response.status);
+      }
+      const buffer = await response.arrayBuffer();
+      figma.ui.postMessage({
+        type: "FETCH_CORS_RESULT",
+        url: msg.url,
+        buffer: new Uint8Array(buffer),
+      } satisfies CodeToUi);
+    } catch (e) {
+      figma.ui.postMessage({
+        type: "FETCH_CORS_ERROR",
+        url: msg.url,
+        message: String(e),
+      } satisfies CodeToUi);
+    }
+    return;
+  }
   if (msg.type !== "import-nodes") {
     return;
   }
