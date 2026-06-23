@@ -46,6 +46,7 @@ figma.ui.onmessage = async (msg: UiToCode) => {
           message,
           built,
           total,
+          percent: 70 + (built / Math.max(1, total)) * 30,
         });
       }
     );

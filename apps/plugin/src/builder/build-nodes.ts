@@ -37,8 +37,11 @@ export async function buildNodes(
   const warnings: Array<string> = [];
   let built = 0;
   let skipped = 0;
-
   const totalNodes = countTreeNodes(tree);
+
+  const scratchContainer = figma.createFrame();
+  scratchContainer.name = "wooFrame Internal Builder";
+  scratchContainer.visible = false;
 
   async function makeNode(treeNode: TreeNode): Promise<SceneNode | null> {
     const change = treeNode.change;
@@ -62,6 +65,7 @@ export async function buildNodes(
         node = figma.createFrame();
         applyFrame(node as FrameNode, change, blobs, warnings);
       }
+      scratchContainer.appendChild(node);
       node.name = change.name;
       applyGeometry(node, change, warnings);
       built += 1;
@@ -89,6 +93,7 @@ export async function buildNodes(
   } else {
     const container = figma.createFrame();
     container.name = rootName;
+    scratchContainer.appendChild(container);
     for (const r of tree) {
       const n = await makeNode(r);
       if (n) {
@@ -98,16 +103,19 @@ export async function buildNodes(
     root = container;
   }
   if (!root) {
+    scratchContainer.remove();
     throw new Error("No nodes could be built from the converted document");
   }
+
+  // Move the root to the canvas so it isn't destroyed when scratchContainer is removed.
+  // It will be positioned by the caller.
+  figma.currentPage.appendChild(root);
+  scratchContainer.remove();
 
   return {
     root: root as BuildResult["root"],
     summary: {
       built,
-      // Total is the number of buildable nodes in the tree (the converter's
-      // reserved DOCUMENT/CANVAS/root-FRAME scaffold is excluded by buildTree),
-      // so built + skipped accounts for every node we attempted.
       total: totalNodes,
       skipped,
       missingFonts: [...missingFonts],

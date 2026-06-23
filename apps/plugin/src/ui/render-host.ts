@@ -107,8 +107,10 @@ function extractBaseUrlFromSingleFile(html: string): string | null {
 export async function renderAndConvert(
   html: string,
   rootName: string,
-  width: number = DEFAULT_RENDER_WIDTH
+  width: number = DEFAULT_RENDER_WIDTH,
+  onProgress?: (message: string, percent: number) => void
 ): Promise<RenderResult> {
+  onProgress?.("Parsing HTML...", 10);
   let finalHtml = html;
   const baseUrl = extractBaseUrlFromSingleFile(html);
   if (baseUrl && !html.includes("<base ")) {
@@ -127,6 +129,7 @@ export async function renderAndConvert(
 
   try {
     await writeAndWait(iframe, finalHtml);
+    onProgress?.("Loading Media...", 30);
     const doc = iframe.contentDocument;
     if (!doc) {
       throw new Error("Could not access rendered document");
@@ -135,6 +138,7 @@ export async function renderAndConvert(
     const width = Math.max(1, Math.round(doc.documentElement.scrollWidth));
     const height = Math.max(1, Math.round(doc.documentElement.scrollHeight));
 
+    onProgress?.("Converting DOM...", 50);
     const converter = createFigmaConverter({ imageLoader: customImageLoader });
     const result = await converter.convert({
       element: body,
@@ -142,6 +146,8 @@ export async function renderAndConvert(
       height,
       name: rootName,
     });
+    
+    onProgress?.("Sending to Figma...", 70);
     return {
       nodeChanges: result.document.nodeChanges,
       rootName,

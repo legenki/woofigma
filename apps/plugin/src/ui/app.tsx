@@ -29,6 +29,7 @@ export function App() {
   const [name, setName] = useState("Imported");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
+  const [percent, setPercent] = useState(0);
   const [isError, setIsError] = useState(false);
   const [over, setOver] = useState(false);
   const [width, setWidth] = useState<number>(DEFAULT_WIDTH);
@@ -44,6 +45,9 @@ export function App() {
         setBusy(true);
         setIsError(false);
         setStatus(msg.message);
+        if (msg.percent !== undefined) {
+          setPercent(msg.percent);
+        }
         return;
       }
       setBusy(false);
@@ -57,6 +61,7 @@ export function App() {
       }
       if (msg.type === "import-done") {
         setIsError(false);
+        setPercent(100);
         const parts = [`Built ${msg.built} of ${msg.total} layers.`];
         if (msg.skipped) {
           parts.push(`Skipped ${msg.skipped}.`);
@@ -78,11 +83,16 @@ export function App() {
     setBusy(true);
     setIsError(false);
     setStatus("Rendering and converting…");
+    setPercent(0);
     try {
       const { nodeChanges, rootName, blobs } = await renderAndConvert(
         source,
         name,
-        width
+        width,
+        (message, pct) => {
+          setStatus(message);
+          setPercent(pct);
+        }
       );
       post({ type: "import-nodes", nodeChanges, rootName, blobs });
     } catch (error) {
@@ -157,7 +167,18 @@ export function App() {
       >
         {busy ? "Importing…" : "Import to Figma"}
       </button>
-      {status && (
+
+      {busy && !isError && (
+        <div className="preloader">
+          <div className="progress-track">
+            <div className="progress-fill" style={{ width: `${Math.max(0, Math.min(100, percent))}%` }} />
+          </div>
+          <p className="progress-text">{status}</p>
+          <p className="progress-percent">{Math.round(percent)}%</p>
+        </div>
+      )}
+
+      {!busy && status && (
         <div className={isError ? "status error" : "status"}>{status}</div>
       )}
     </div>

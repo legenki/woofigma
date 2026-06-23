@@ -24,6 +24,7 @@ export type CodeToUi =
       message: string;
       built?: number;
       total?: number;
+      percent?: number;
     }
   | { type: "import-error"; message: string }
   | { type: "FETCH_CORS_RESULT"; url: string; buffer: Uint8Array }
