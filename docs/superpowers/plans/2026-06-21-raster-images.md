@@ -56,7 +56,7 @@ resolves.
 
 - [ ] **Step 3: Typecheck the converter**
 
-Run: `pnpm --filter @woofigma/dom-to-figma check-types`
+Run: `pnpm --filter @wooframe/dom-to-figma check-types`
 Expected: PASS.
 
 - [ ] **Step 4: Commit**
@@ -112,7 +112,7 @@ git commit -m "test(plugin): add throwable createImage to figma mock"
 Replace the contents of `apps/plugin/src/builder/paint-mapper.test.ts` with (the file currently tests `mapPaints(paints)`; the signature changes to take a context):
 
 ```ts
-import type { FigmaPaint } from "@woofigma/dom-to-figma/internal";
+import type { FigmaPaint } from "@wooframe/dom-to-figma/internal";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createFigmaMock } from "./figma-mock";
 import { mapPaints, type PaintContext } from "./paint-mapper";
@@ -198,7 +198,7 @@ Expected: FAIL — `mapPaints` doesn't accept a context / `PaintContext` not exp
 Replace `apps/plugin/src/builder/paint-mapper.ts` with:
 
 ```ts
-import type { FigmaPaint } from "@woofigma/dom-to-figma/internal";
+import type { FigmaPaint } from "@wooframe/dom-to-figma/internal";
 
 // Figma's GradientPaint requires a gradientTransform; a top-to-bottom default
 // is used for V1. Deriving the real direction from the CSS angle is future work.

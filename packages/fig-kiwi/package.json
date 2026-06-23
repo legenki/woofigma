@@ -1,17 +1,17 @@
 {
-  "name": "@woofigma/fig-kiwi",
+  "name": "@wooframe/fig-kiwi",
   "version": "0.0.2",
   "description": "Encode Figma's Kiwi binary format and HTML clipboard envelope.",
   "license": "MIT",
   "author": "legenki",
-  "homepage": "https://github.com/legenki/woofigma#readme",
+  "homepage": "https://github.com/legenki/wooframe#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/legenki/woofigma.git",
+    "url": "git+https://github.com/legenki/wooframe.git",
     "directory": "packages/fig-kiwi"
   },
   "bugs": {
-    "url": "https://github.com/legenki/woofigma/issues"
+    "url": "https://github.com/legenki/wooframe/issues"
   },
   "keywords": [
     "figma",

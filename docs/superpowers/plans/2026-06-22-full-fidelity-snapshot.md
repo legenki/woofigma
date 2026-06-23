@@ -231,7 +231,7 @@ props are not in the blacklist.
 
 Run: `pnpm --filter plugin check-types && pnpm --filter plugin exec vitest run`
 Expected: PASS — the extension build smoke test still finds the snapshot marker
-(`woofigma-snapshot.html`), and all snapshot tests pass.
+(`wooframe-snapshot.html`), and all snapshot tests pass.
 
 - [ ] **Step 4: Format + commit**
 
@@ -263,8 +263,8 @@ writes `content.js`.
 
 Run:
 ```bash
-node -e "const s=require('fs').readFileSync('apps/plugin/bookmarklet/snapshot.bookmarklet.txt','utf8'); if(!s.startsWith('javascript:'))throw new Error('bad'); if(!decodeURIComponent(s.slice(11)).includes('SNAPSHOT_SKIP_PROPS') && !decodeURIComponent(s.slice(11)).includes('woofigma-snapshot.html'))throw new Error('missing marker'); console.log('bookmarklet ok')"
-grep -q "woofigma-snapshot.html" apps/plugin/extension/content.js && echo "content.js ok"
+node -e "const s=require('fs').readFileSync('apps/plugin/bookmarklet/snapshot.bookmarklet.txt','utf8'); if(!s.startsWith('javascript:'))throw new Error('bad'); if(!decodeURIComponent(s.slice(11)).includes('SNAPSHOT_SKIP_PROPS') && !decodeURIComponent(s.slice(11)).includes('wooframe-snapshot.html'))throw new Error('missing marker'); console.log('bookmarklet ok')"
+grep -q "wooframe-snapshot.html" apps/plugin/extension/content.js && echo "content.js ok"
 ```
 Expected: `bookmarklet ok` and `content.js ok`.
 

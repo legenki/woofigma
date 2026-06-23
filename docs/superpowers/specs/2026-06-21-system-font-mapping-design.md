@@ -1,7 +1,7 @@
 # System / generic font-name pre-mapping
 
 **Date:** 2026-06-21
-**Package:** `@woofigma/dom-to-figma`
+**Package:** `@wooframe/dom-to-figma`
 **Status:** Approved, pending implementation
 
 ## Problem

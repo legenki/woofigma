@@ -1,4 +1,4 @@
-# woofigma
+# wooframe
 
 Import HTML into **editable Figma layers**. A Figma plugin plus the DOM-to-Figma
 conversion stack it's built on.
@@ -15,13 +15,13 @@ This is a pnpm monorepo with three projects, layered bottom-up:
 
 | Package | What it does |
 | --- | --- |
-| [`@woofigma/fig-kiwi`](packages/fig-kiwi) | Low-level codec for Figma's **Kiwi** binary format and the HTML clipboard envelope Figma reads on paste. |
-| [`@woofigma/dom-to-figma`](packages/dom-to-figma) | Walks a real DOM tree, reads computed styles, and produces a Figma clipboard payload. Built on `fig-kiwi`. |
-| [`apps/plugin`](apps/plugin) | The **Woofigma Import** Figma plugin. Renders HTML in a sandboxed iframe, runs the converter against that live DOM, and maps the result to Figma Plugin API nodes — no clipboard `Cmd+V` step. |
+| [`@wooframe/fig-kiwi`](packages/fig-kiwi) | Low-level codec for Figma's **Kiwi** binary format and the HTML clipboard envelope Figma reads on paste. |
+| [`@wooframe/dom-to-figma`](packages/dom-to-figma) | Walks a real DOM tree, reads computed styles, and produces a Figma clipboard payload. Built on `fig-kiwi`. |
+| [`apps/plugin`](apps/plugin) | The **wooFrame Import** Figma plugin. Renders HTML in a sandboxed iframe, runs the converter against that live DOM, and maps the result to Figma Plugin API nodes — no clipboard `Cmd+V` step. |
 
 Two ways to use the stack:
 
-- **In the browser / a web app** → depend on `@woofigma/dom-to-figma`, convert a
+- **In the browser / a web app** → depend on `@wooframe/dom-to-figma`, convert a
   DOM tree, and write the result to the clipboard. The user pastes into Figma.
 - **Inside Figma** → run the plugin, which does the conversion and builds the
   layers directly on the canvas.
@@ -47,13 +47,13 @@ pnpm --filter plugin build
 
 Then in Figma desktop: **Plugins → Development → Import plugin from manifest…**,
 choose [`apps/plugin/manifest.json`](apps/plugin/manifest.json), and run
-**Woofigma Import**. See the [plugin README](apps/plugin/README.md) for the full
+**wooFrame Import**. See the [plugin README](apps/plugin/README.md) for the full
 load + manual-E2E walkthrough.
 
 ### Use the converter in code
 
 ```ts
-import { createFigmaConverter } from "@woofigma/dom-to-figma";
+import { createFigmaConverter } from "@wooframe/dom-to-figma";
 
 const figma = createFigmaConverter();
 const result = await figma.convert({

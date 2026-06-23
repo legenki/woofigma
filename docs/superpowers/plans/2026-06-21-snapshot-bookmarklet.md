@@ -118,7 +118,7 @@ Create `apps/plugin/bookmarklet/snapshot.js`:
 ```js
 // Snapshot bookmarklet source. Captures a page's live (post-JS) DOM, inlines the
 // CSS properties the converter reads, strips scripts, and downloads/copies a
-// self-contained .html for the Woofigma plugin.
+// self-contained .html for the wooFrame plugin.
 //
 // SNAPSHOT_STYLE_PROPS must stay in sync with the properties the converter reads
 // in packages/dom-to-figma/src/converter. A guard test
@@ -363,10 +363,10 @@ Append to `apps/plugin/bookmarklet/snapshot.js`:
 // side effects); the testable logic lives in buildSnapshotHtml above.
 export function runSnapshot() {
   const toast = (msg) => {
-    let el = document.getElementById("__woofigma_toast");
+    let el = document.getElementById("__wooframe_toast");
     if (!el) {
       el = document.createElement("div");
-      el.id = "__woofigma_toast";
+      el.id = "__wooframe_toast";
       el.style.cssText =
         "position:fixed;bottom:16px;right:16px;z-index:2147483647;background:#0d99ff;color:#fff;font:13px/1.4 sans-serif;padding:8px 14px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.2)";
       document.body.appendChild(el);
@@ -383,7 +383,7 @@ export function runSnapshot() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "woofigma-snapshot.html";
+  a.download = "wooframe-snapshot.html";
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -395,7 +395,7 @@ export function runSnapshot() {
     });
   }
 
-  toast("Snapshot saved — drop the .html into Woofigma (or paste).");
+  toast("Snapshot saved — drop the .html into wooFrame (or paste).");
 }
 ```
 
@@ -406,8 +406,8 @@ module so the bookmarklet is self-contained):
 
 ```bash
 npx --yes esbuild apps/plugin/bookmarklet/snapshot.js \
-  --bundle --minify --format=iife --global-name=__woofigma \
-  --footer:js='__woofigma.runSnapshot();' 2>/dev/null \
+  --bundle --minify --format=iife --global-name=__wooframe \
+  --footer:js='__wooframe.runSnapshot();' 2>/dev/null \
   | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const enc=encodeURIComponent(s);require("fs").writeFileSync("apps/plugin/bookmarklet/snapshot.bookmarklet.txt","javascript:"+enc+"\n")})'
 ```
 
@@ -439,11 +439,11 @@ git commit -m "feat(plugin): bookmarklet entry point and minified javascript: st
 Create `apps/plugin/bookmarklet/README.md`:
 
 ```markdown
-# Woofigma snapshot bookmarklet
+# wooFrame snapshot bookmarklet
 
 Captures a page's **live, rendered** DOM (after its JavaScript has run, in your
 own logged-in session) into a self-contained `.html` you can drop into the
-Woofigma plugin. Use it for pages that Load-from-URL can't reach: private /
+wooFrame plugin. Use it for pages that Load-from-URL can't reach: private /
 authenticated dashboards and JS-rendered SPAs.
 
 ## Install
@@ -451,13 +451,13 @@ authenticated dashboards and JS-rendered SPAs.
 1. Open `snapshot.bookmarklet.txt` and copy the whole `javascript:…` line.
 2. Create a new bookmark in your browser (e.g. right-click the bookmarks bar →
    Add page / New bookmark).
-3. Name it "Woofigma snapshot" and paste the copied string as the **URL**.
+3. Name it "wooFrame snapshot" and paste the copied string as the **URL**.
 
 ## Use
 
 1. Navigate to the page you want to import.
-2. Click the **Woofigma snapshot** bookmark.
-3. A toast shows progress; a `woofigma-snapshot.html` downloads (and the HTML is
+2. Click the **wooFrame snapshot** bookmark.
+3. A toast shows progress; a `wooframe-snapshot.html` downloads (and the HTML is
    copied to your clipboard if the browser allows).
 4. In Figma, run the plugin and drop the `.html` onto the drop zone (or paste).
 
@@ -477,8 +477,8 @@ multi-MB file — that's expected for a one-shot capture.
 
 \`\`\`bash
 npx --yes esbuild apps/plugin/bookmarklet/snapshot.js \
-  --bundle --minify --format=iife --global-name=__woofigma \
-  --footer:js='__woofigma.runSnapshot();' \
+  --bundle --minify --format=iife --global-name=__wooframe \
+  --footer:js='__wooframe.runSnapshot();' \
   | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{require("fs").writeFileSync("apps/plugin/bookmarklet/snapshot.bookmarklet.txt","javascript:"+encodeURIComponent(s)+"\n")})'
 \`\`\`
 

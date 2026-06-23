@@ -1,4 +1,4 @@
-# @woofigma/dom-to-figma
+# @wooframe/dom-to-figma
 
 ## 0.0.2
 

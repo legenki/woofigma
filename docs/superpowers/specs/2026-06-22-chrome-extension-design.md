@@ -69,8 +69,8 @@ Reuse esbuild (as `build.mjs` does). A `build-extension.mjs` bundles
    `content.js`).
 2. `chrome://extensions` → enable Developer mode → **Load unpacked** → select
    `apps/plugin/extension/`.
-3. On any page, click the **Woofigma Snapshot** toolbar icon → toast → a
-   `woofigma-snapshot.html` downloads (and is copied to clipboard).
+3. On any page, click the **wooFrame Snapshot** toolbar icon → toast → a
+   `wooframe-snapshot.html` downloads (and is copied to clipboard).
 4. Drop the `.html` into the plugin (or Cmd+V).
 
 One-click install from the Chrome Web Store (vs. Load unpacked) would require
@@ -83,7 +83,7 @@ publishing (developer account + Google review) — out of scope.
 - **Build smoke test** (`extension-build.test.ts`, node): run the extension
   build, then assert `extension/content.js` exists and its text contains a marker
   proving the bundle includes the snapshot logic (e.g. the
-  `"woofigma-snapshot.html"` download filename string). Guards that the bundle
+  `"wooframe-snapshot.html"` download filename string). Guards that the bundle
   actually wires `runSnapshot` in.
 - `manifest.json` / `background.js` are not unit-tested (trivial; verified by
   manual Load unpacked).

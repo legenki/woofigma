@@ -111,7 +111,7 @@ describe("extension content bundle", () => {
   it("bundles the snapshot delivery logic", () => {
     const text = readFileSync(CONTENT_JS, "utf8");
     // The download filename is a stable marker that runSnapshot is wired in.
-    expect(text).toContain("woofigma-snapshot.html");
+    expect(text).toContain("wooframe-snapshot.html");
   });
 });
 ```
@@ -190,15 +190,15 @@ Create `apps/plugin/extension/manifest.json`:
 ```json
 {
   "manifest_version": 3,
-  "name": "Woofigma Snapshot",
+  "name": "wooFrame Snapshot",
   "version": "0.0.1",
-  "description": "Capture the current page's rendered DOM as an .html snapshot for the Woofigma Figma plugin.",
+  "description": "Capture the current page's rendered DOM as an .html snapshot for the wooFrame Figma plugin.",
   "permissions": ["activeTab", "scripting"],
   "background": {
     "service_worker": "background.js"
   },
   "action": {
-    "default_title": "Woofigma snapshot",
+    "default_title": "wooFrame snapshot",
     "default_icon": {
       "16": "icon.png",
       "48": "icon.png",
@@ -264,11 +264,11 @@ git commit -m "feat(plugin): chrome extension manifest, background worker, icon"
 Create `apps/plugin/extension/README.md`:
 
 ```markdown
-# Woofigma Snapshot — Chrome extension
+# wooFrame Snapshot — Chrome extension
 
 A toolbar-icon version of the snapshot bookmarklet. Click the icon on any page to
-capture its live, rendered DOM (in your own session) as a `woofigma-snapshot.html`
-you drop into the Woofigma Figma plugin. Same capture logic as the bookmarklet —
+capture its live, rendered DOM (in your own session) as a `wooframe-snapshot.html`
+you drop into the wooFrame Figma plugin. Same capture logic as the bookmarklet —
 this just trades the bookmark for a toolbar button.
 
 ## Build
@@ -286,13 +286,13 @@ This regenerates `content.js` from the shared `../bookmarklet/snapshot.js`.
 3. Enable **Developer mode** (top-right).
 4. Click **Load unpacked** and select the `apps/plugin/extension/` folder.
 
-The **Woofigma Snapshot** icon appears in the toolbar.
+The **wooFrame Snapshot** icon appears in the toolbar.
 
 ## Use
 
 1. Navigate to the page you want to import.
-2. Click the **Woofigma Snapshot** toolbar icon.
-3. A toast shows progress; a `woofigma-snapshot.html` downloads (and is copied to
+2. Click the **wooFrame Snapshot** toolbar icon.
+3. A toast shows progress; a `wooframe-snapshot.html` downloads (and is copied to
    the clipboard if the browser allows).
 4. In Figma, run the plugin and drop the `.html` onto the drop zone (or Cmd+V).
 

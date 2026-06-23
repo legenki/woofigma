@@ -72,7 +72,7 @@ describe("createFontsourceLoader generic-family mapping", () => {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `pnpm --filter @woofigma/dom-to-figma exec vitest run --project unit loader.test.ts`
+Run: `pnpm --filter @wooframe/dom-to-figma exec vitest run --project unit loader.test.ts`
 Expected: FAIL — `resolvedFamily` is `undefined` (loader currently fetches `/monospace@…`, 404s in the real impl, but with the mock returning 200 it "succeeds" on the monospace URL so `resolvedFamily` is unset and the URL assertion fails).
 
 - [ ] **Step 3: Add the map + helper (still unused)**
@@ -113,7 +113,7 @@ const GENERIC_FAMILY_MAP: Record<string, string> = {
 
 - [ ] **Step 4: Run lint/typecheck to confirm it compiles**
 
-Run: `pnpm --filter @woofigma/dom-to-figma check-types`
+Run: `pnpm --filter @wooframe/dom-to-figma check-types`
 Expected: PASS (the constant is unused but valid; Knip is not run here).
 
 The test still fails (helper not wired) — that's expected; wiring is Task 2.
@@ -162,13 +162,13 @@ Note: the existing body already computes `const familyKey = familyToSlug(request
 
 - [ ] **Step 2: Run the Task-1 test to verify it now passes**
 
-Run: `pnpm --filter @woofigma/dom-to-figma exec vitest run --project unit loader.test.ts`
+Run: `pnpm --filter @wooframe/dom-to-figma exec vitest run --project unit loader.test.ts`
 Expected: PASS — one fetch to `/roboto-mono@…`, `resolvedFamily === "Roboto Mono"`.
 
 - [ ] **Step 3: Run the full package suite + typecheck (no regression)**
 
-Run: `pnpm --filter @woofigma/dom-to-figma check-types && pnpm --filter @woofigma/dom-to-figma exec vitest run --project unit`
-Expected: PASS. (Browser project unchanged; run it too if convenient: `pnpm --filter @woofigma/dom-to-figma test`.)
+Run: `pnpm --filter @wooframe/dom-to-figma check-types && pnpm --filter @wooframe/dom-to-figma exec vitest run --project unit`
+Expected: PASS. (Browser project unchanged; run it too if convenient: `pnpm --filter @wooframe/dom-to-figma test`.)
 
 - [ ] **Step 4: Commit**
 
@@ -262,12 +262,12 @@ Append these `it` blocks inside the existing `describe`:
 
 - [ ] **Step 2: Run the test file**
 
-Run: `pnpm --filter @woofigma/dom-to-figma exec vitest run --project unit loader.test.ts`
+Run: `pnpm --filter @wooframe/dom-to-figma exec vitest run --project unit loader.test.ts`
 Expected: PASS — all 7 cases green.
 
 - [ ] **Step 3: Run lint**
 
-Run: `pnpm --filter @woofigma/dom-to-figma lint`
+Run: `pnpm --filter @wooframe/dom-to-figma lint`
 Expected: PASS (no new errors).
 
 - [ ] **Step 4: Commit**

@@ -47,7 +47,7 @@ describe("convertToPng SVG fallback", () => {
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `pnpm --filter @woofigma/dom-to-figma exec vitest run --project browser loader.browser.test.ts`
+Run: `pnpm --filter @wooframe/dom-to-figma exec vitest run --project browser loader.browser.test.ts`
 Expected: FAIL — `processImageFile` on the SVG rejects with `InvalidStateError`
 (createImageBitmap can't decode SVG, and there's no fallback yet).
 
@@ -124,13 +124,13 @@ these helpers are added.)
 
 - [ ] **Step 4: Run the test to verify it passes**
 
-Run: `pnpm --filter @woofigma/dom-to-figma exec vitest run --project browser loader.browser.test.ts`
+Run: `pnpm --filter @wooframe/dom-to-figma exec vitest run --project browser loader.browser.test.ts`
 Expected: PASS — the SVG now transcodes to PNG via the `<img>` fallback; the webp
 test (bitmap path) still passes; the garbage test still rejects (both paths fail).
 
 - [ ] **Step 5: Typecheck + the package's browser suite (no regression)**
 
-Run: `pnpm --filter @woofigma/dom-to-figma check-types && pnpm --filter @woofigma/dom-to-figma exec vitest run --project browser`
+Run: `pnpm --filter @wooframe/dom-to-figma check-types && pnpm --filter @wooframe/dom-to-figma exec vitest run --project browser`
 Expected: PASS.
 
 - [ ] **Step 6: Format + commit**

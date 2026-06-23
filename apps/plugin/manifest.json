@@ -1,6 +1,6 @@
 {
-  "name": "Woofigma Import",
-  "id": "woofigma-import-dev",
+  "name": "wooFrame Import",
+  "id": "wooframe-import-dev",
   "api": "1.0.0",
   "editorType": ["figma"],
   "main": "dist/code.js",

@@ -78,7 +78,7 @@ describe("undecodable image isolation", () => {
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run: `pnpm --filter @woofigma/dom-to-figma exec vitest run --project browser loader.browser.test.ts`
+Run: `pnpm --filter @wooframe/dom-to-figma exec vitest run --project browser loader.browser.test.ts`
 Expected: FAIL — `sha1Bytes` is not exported (and the no-crypto test would fail
 against the current `crypto.subtle` implementation).
 
@@ -186,13 +186,13 @@ call loses its `await`.)
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run: `pnpm --filter @woofigma/dom-to-figma exec vitest run --project browser loader.browser.test.ts`
+Run: `pnpm --filter @wooframe/dom-to-figma exec vitest run --project browser loader.browser.test.ts`
 Expected: PASS — SHA-1 vectors for `"abc"` and `""` match; `processImageFile`
 hashes with `crypto` stubbed to `{}`; garbage rejects.
 
 - [ ] **Step 5: Typecheck + the package's browser suite (no regression)**
 
-Run: `pnpm --filter @woofigma/dom-to-figma check-types && pnpm --filter @woofigma/dom-to-figma exec vitest run --project browser`
+Run: `pnpm --filter @wooframe/dom-to-figma check-types && pnpm --filter @wooframe/dom-to-figma exec vitest run --project browser`
 Expected: PASS.
 
 - [ ] **Step 6: Format + commit**

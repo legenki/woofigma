@@ -1,5 +1,5 @@
 {
-  "name": "woofigma",
+  "name": "wooframe",
   "private": true,
   "version": "0.0.0",
   "description": "Import HTML into editable Figma layers — Figma plugin and the DOM-to-Figma conversion stack.",

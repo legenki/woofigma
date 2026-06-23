@@ -6,7 +6,7 @@
 
 ## Problem
 
-`@woofigma/dom-to-figma` already converts `<img>` elements: each becomes a
+`@wooframe/dom-to-figma` already converts `<img>` elements: each becomes a
 `ROUNDED_RECTANGLE` node with an `IMAGE` fill paint, and the decoded PNG bytes
 are stored in `result.document.blobs`, referenced from the paint by
 `image.dataBlob` (an index into that blob array).
@@ -112,7 +112,7 @@ context (unchanged behavior).
   override or a sentinel byte) so test case 2 (createImage throwing) can be
   written.
 
-The converter (`@woofigma/dom-to-figma`) is **not** touched.
+The converter (`@wooframe/dom-to-figma`) is **not** touched.
 
 ## Testing
 

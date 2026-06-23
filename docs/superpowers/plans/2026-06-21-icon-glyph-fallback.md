@@ -91,7 +91,7 @@ describe("resolveGlyphFont", () => {
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `pnpm --filter @woofigma/dom-to-figma exec vitest run --project browser processor.browser.test.ts`
+Run: `pnpm --filter @wooframe/dom-to-figma exec vitest run --project browser processor.browser.test.ts`
 Expected: FAIL — `collectCodepointsMissingFromFont` / `resolveGlyphFont` are not exported.
 
 - [ ] **Step 3: Add the helpers + constant to processor.ts**
@@ -158,7 +158,7 @@ The file already imports `LoadedFont` (from `../font`) — confirm the import li
 
 - [ ] **Step 4: Run the test to verify it passes**
 
-Run: `pnpm --filter @woofigma/dom-to-figma exec vitest run --project browser processor.browser.test.ts`
+Run: `pnpm --filter @wooframe/dom-to-figma exec vitest run --project browser processor.browser.test.ts`
 Expected: PASS (5 assertions across the two describes).
 
 - [ ] **Step 5: Commit**
@@ -235,7 +235,7 @@ describe("processGlyphs with fallback fonts", () => {
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `pnpm --filter @woofigma/dom-to-figma exec vitest run --project browser processor.browser.test.ts`
+Run: `pnpm --filter @wooframe/dom-to-figma exec vitest run --project browser processor.browser.test.ts`
 Expected: FAIL — `processGlyphs` ignores the 5th arg; ▾ still resolves to
 `.notdef` in Inter and the char is dropped (`data` undefined).
 
@@ -335,12 +335,12 @@ locals to satisfy lint).
 
 - [ ] **Step 4: Run the test to verify it passes**
 
-Run: `pnpm --filter @woofigma/dom-to-figma exec vitest run --project browser processor.browser.test.ts`
+Run: `pnpm --filter @wooframe/dom-to-figma exec vitest run --project browser processor.browser.test.ts`
 Expected: PASS (all Task 1 + Task 2 tests).
 
 - [ ] **Step 5: Typecheck + run the package's browser suite**
 
-Run: `pnpm --filter @woofigma/dom-to-figma check-types && pnpm --filter @woofigma/dom-to-figma exec vitest run --project browser`
+Run: `pnpm --filter @wooframe/dom-to-figma check-types && pnpm --filter @wooframe/dom-to-figma exec vitest run --project browser`
 Expected: PASS. (If `check-types` flags the removed `font`/`metrics` locals in
 `processGlyphs`, delete the now-unused `const { font, metrics } = loadedFont;`
 line.)
@@ -418,12 +418,12 @@ import type { LoadedFont } from "./primitives/font";
 
 - [ ] **Step 3: Typecheck**
 
-Run: `pnpm --filter @woofigma/dom-to-figma check-types`
+Run: `pnpm --filter @wooframe/dom-to-figma check-types`
 Expected: PASS.
 
 - [ ] **Step 4: Run the full package suite**
 
-Run: `pnpm --filter @woofigma/dom-to-figma exec vitest run`
+Run: `pnpm --filter @wooframe/dom-to-figma exec vitest run`
 Expected: PASS (unit + browser; no regressions in existing text tests).
 
 - [ ] **Step 5: Lint**

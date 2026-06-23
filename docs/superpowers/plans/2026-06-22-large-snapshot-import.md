@@ -4,7 +4,7 @@
 
 **Goal:** Make a 10 MB SingleFile snapshot (webp/avif data-URI images, ~4500 elements) import faithfully: images transcode instead of going black, large captures don't time out, and conversion uses the real content height.
 
-**Architecture:** Three independent fixes. Wall 1 (images) in `@woofigma/dom-to-figma`'s image loader: decode `data:` URIs to bytes directly (no fetch) and transcode webp/avif via `createImageBitmap` instead of `<img>`. Wall 2 (timeout) extracts a pure `computeLoadTimeout(htmlLength)` so it's node-testable, used by `render-host`. Wall 3 (height) sizes the render iframe to the measured content height before conversion so `fixed` elements position correctly. Snapshot tools, converter walkers, and the plugin UI are untouched.
+**Architecture:** Three independent fixes. Wall 1 (images) in `@wooframe/dom-to-figma`'s image loader: decode `data:` URIs to bytes directly (no fetch) and transcode webp/avif via `createImageBitmap` instead of `<img>`. Wall 2 (timeout) extracts a pure `computeLoadTimeout(htmlLength)` so it's node-testable, used by `render-host`. Wall 3 (height) sizes the render iframe to the measured content height before conversion so `fixed` elements position correctly. Snapshot tools, converter walkers, and the plugin UI are untouched.
 
 **Tech Stack:** TypeScript, Vitest — browser project (Playwright chromium + canvas) for the image-loader changes; node project for the pure timeout formula. `createImageBitmap` for robust webp/avif decode.
 
@@ -88,7 +88,7 @@ describe("convertToPng via processImageFile", () => {
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `pnpm --filter @woofigma/dom-to-figma exec vitest run --project browser loader.browser.test.ts`
+Run: `pnpm --filter @wooframe/dom-to-figma exec vitest run --project browser loader.browser.test.ts`
 Expected: FAIL — `decodeImageBytes` is not exported.
 
 - [ ] **Step 3: Add `decodeImageBytes` and use it in the loader**
@@ -164,13 +164,13 @@ referenced). Keep `canvasToBlob`, `sha1`, `isFigmaSupportedFormat`,
 
 - [ ] **Step 5: Run the test to verify it passes**
 
-Run: `pnpm --filter @woofigma/dom-to-figma exec vitest run --project browser loader.browser.test.ts`
+Run: `pnpm --filter @wooframe/dom-to-figma exec vitest run --project browser loader.browser.test.ts`
 Expected: PASS (3 tests) — data-URI decodes without fetch, http falls back, webp
 transcodes to PNG.
 
 - [ ] **Step 6: Typecheck + the package's browser suite (no regression)**
 
-Run: `pnpm --filter @woofigma/dom-to-figma check-types && pnpm --filter @woofigma/dom-to-figma exec vitest run --project browser`
+Run: `pnpm --filter @wooframe/dom-to-figma check-types && pnpm --filter @wooframe/dom-to-figma exec vitest run --project browser`
 Expected: PASS — existing `figma.image.browser.test.ts` still green.
 
 - [ ] **Step 7: Format + commit**

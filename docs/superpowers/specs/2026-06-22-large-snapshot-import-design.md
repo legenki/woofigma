@@ -1,7 +1,7 @@
 # Importing large SingleFile snapshots — design
 
 **Date:** 2026-06-22
-**Package:** `apps/plugin` (render-host) + `@woofigma/dom-to-figma` (image loader); snapshot/extension/converter-core unchanged
+**Package:** `apps/plugin` (render-host) + `@wooframe/dom-to-figma` (image loader); snapshot/extension/converter-core unchanged
 **Status:** Approved, pending implementation
 
 ## Problem (diagnosed on a real 10 MB SingleFile artifact)

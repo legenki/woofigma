@@ -1,7 +1,7 @@
 # Per-character symbol-font fallback — design
 
 **Date:** 2026-06-21
-**Package:** `@woofigma/dom-to-figma` (text glyph pipeline)
+**Package:** `@wooframe/dom-to-figma` (text glyph pipeline)
 **Status:** Approved, pending implementation
 
 ## Problem (root cause, verified)

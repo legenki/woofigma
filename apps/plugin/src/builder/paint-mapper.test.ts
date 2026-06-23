@@ -1,4 +1,4 @@
-import type { FigmaPaint } from "@woofigma/dom-to-figma/internal";
+import type { FigmaPaint } from "@wooframe/dom-to-figma/internal";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createFigmaMock } from "./figma-mock";
 import type { PaintContext } from "./paint-mapper";

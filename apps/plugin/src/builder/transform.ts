@@ -1,4 +1,4 @@
-import type { FigmaTransform } from "@woofigma/dom-to-figma/internal";
+import type { FigmaTransform } from "@wooframe/dom-to-figma/internal";
 
 export type Decomposed = {
   x: number;

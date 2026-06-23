@@ -1,7 +1,7 @@
 # Restore `<img>` fallback so SVG images decode — design
 
 **Date:** 2026-06-22
-**Package:** `@woofigma/dom-to-figma` (image loader only)
+**Package:** `@wooframe/dom-to-figma` (image loader only)
 **Status:** Approved, pending implementation
 
 ## Problem (root cause verified in chromium)

@@ -1,7 +1,7 @@
 # Fix image processing in the Figma iframe — design
 
 **Date:** 2026-06-22
-**Package:** `@woofigma/dom-to-figma` (image loader only)
+**Package:** `@wooframe/dom-to-figma` (image loader only)
 **Status:** Approved, pending implementation
 
 ## Problem (verified from live Figma console)

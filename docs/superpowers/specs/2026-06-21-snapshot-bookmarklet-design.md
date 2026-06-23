@@ -24,10 +24,10 @@ The bookmarklet, run on the target page by clicking it:
 3. Removes `<script>` and `<noscript>` from the clone.
 4. Serializes `<!doctype html>` + the clone's `outerHTML`.
 5. **Delivers via both channels:** builds a `Blob` and triggers a download of
-   `woofigma-snapshot.html`, **and** attempts `navigator.clipboard.writeText`
+   `wooframe-snapshot.html`, **and** attempts `navigator.clipboard.writeText`
    (best-effort; ignored if blocked).
 6. Shows a small fixed-position toast: `Processing N elements…` during the walk,
-   then `Snapshot saved — drop the .html into Woofigma (or paste).`.
+   then `Snapshot saved — drop the .html into wooFrame (or paste).`.
 
 The user then drops the `.html` into the plugin (or pastes) — existing flows,
 unchanged.

@@ -1,5 +1,5 @@
-import { createFigmaConverter } from "@woofigma/dom-to-figma";
-import type { FigmaNodeChange } from "@woofigma/dom-to-figma/internal";
+import { createFigmaConverter } from "@wooframe/dom-to-figma";
+import type { FigmaNodeChange } from "@wooframe/dom-to-figma/internal";
 import { computeLoadTimeout } from "./render-timeout";
 
 // Heuristic delay after `load` for bundled pages to finish unpacking into the

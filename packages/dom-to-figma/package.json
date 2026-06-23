@@ -1,17 +1,17 @@
 {
-  "name": "@woofigma/dom-to-figma",
+  "name": "@wooframe/dom-to-figma",
   "version": "0.0.2",
   "description": "Convert any DOM tree to a Figma clipboard payload, in the browser.",
   "license": "MIT",
   "author": "legenki",
-  "homepage": "https://github.com/legenki/woofigma#readme",
+  "homepage": "https://github.com/legenki/wooframe#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/legenki/woofigma.git",
+    "url": "git+https://github.com/legenki/wooframe.git",
     "directory": "packages/dom-to-figma"
   },
   "bugs": {
-    "url": "https://github.com/legenki/woofigma/issues"
+    "url": "https://github.com/legenki/wooframe/issues"
   },
   "keywords": [
     "figma",
@@ -70,7 +70,7 @@
     "lint": "biome check"
   },
   "dependencies": {
-    "@woofigma/fig-kiwi": "workspace:*",
+    "@wooframe/fig-kiwi": "workspace:*",
     "colorjs.io": "^0.6.1",
     "fontkit": "^2.0.4"
   },

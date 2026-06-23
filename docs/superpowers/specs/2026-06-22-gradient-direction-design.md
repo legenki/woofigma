@@ -59,7 +59,7 @@ no longer "V1 always top-to-bottom", just the no-transform fallback).
   `p.transform` in the gradient branch, update the comment.
 - `apps/plugin/src/builder/paint-mapper.test.ts` — new gradient-transform cases.
 
-The converter (`@woofigma/dom-to-figma`) is **not** touched — it already computes
+The converter (`@wooframe/dom-to-figma`) is **not** touched — it already computes
 the transform.
 
 ## Testing

@@ -1,4 +1,4 @@
-# @woofigma/fig-kiwi
+# @wooframe/fig-kiwi
 
 ## 0.0.2
 

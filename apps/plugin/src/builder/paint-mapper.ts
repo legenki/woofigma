@@ -1,4 +1,4 @@
-import type { FigmaPaint } from "@woofigma/dom-to-figma/internal";
+import type { FigmaPaint } from "@wooframe/dom-to-figma/internal";
 
 // Fallback gradient transform (identity → top-to-bottom), used only when a
 // gradient paint carries no transform. The converter normally computes the real
