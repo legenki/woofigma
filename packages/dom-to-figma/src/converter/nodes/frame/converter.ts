@@ -105,6 +105,7 @@ type Params = {
   position: Position;
   imageCache?: ImageCache;
   registerBlob?: (blob: FigmaBlob) => number;
+  pseudoElt?: "::before" | "::after";
 };
 
 type FrameResult = {
@@ -116,11 +117,38 @@ export async function elementToFrameNodeChange(
   element: Element,
   options: Params
 ): Promise<FrameResult> {
-  const { guid, parentGuid, childIndex, position, imageCache, registerBlob } =
-    options;
+  const {
+    guid,
+    parentGuid,
+    childIndex,
+    position,
+    imageCache,
+    registerBlob,
+    pseudoElt,
+  } = options;
 
-  const rect = element.getBoundingClientRect();
-  const computedStyle = window.getComputedStyle(element);
+  const computedStyle = window.getComputedStyle(element, pseudoElt);
+  let rect: DOMRect;
+  if (pseudoElt) {
+    const parentRect = element.getBoundingClientRect();
+    const w = Number.parseFloat(computedStyle.width || "0") || 0;
+    const h = Number.parseFloat(computedStyle.height || "0") || 0;
+    let x = parentRect.left;
+    let y = parentRect.top;
+    if (computedStyle.position === "absolute") {
+      const leftStr = computedStyle.left;
+      const topStr = computedStyle.top;
+      if (leftStr !== "auto") {
+        x = parentRect.left + (Number.parseFloat(leftStr) || 0);
+      }
+      if (topStr !== "auto") {
+        y = parentRect.top + (Number.parseFloat(topStr) || 0);
+      }
+    }
+    rect = new DOMRect(x, y, w, h);
+  } else {
+    rect = element.getBoundingClientRect();
+  }
 
   const width = Math.ceil(rect.width);
   const height = Math.ceil(rect.height);

@@ -1,6 +1,4 @@
-import type { VectorNetwork, VectorRegion, VectorSegment, VectorVertex } from "@figma/plugin-typings";
-
-export function bytesToVectorNetwork(bytes: Uint8Array): VectorNetwork {
+export function bytesToVectorNetwork(bytes: Uint8Array): any {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   let offset = 0;
 
@@ -20,18 +18,18 @@ export function bytesToVectorNetwork(bytes: Uint8Array): VectorNetwork {
   const numSegments = readUint32();
   const numRegions = readUint32();
 
-  const vertices: Array<VectorVertex> = [];
+  const vertices: Array<any> = [];
   for (let i = 0; i < numVertices; i++) {
-    const _styleID = readUint32(); // read and discard styleID
+    readUint32(); // read and discard styleID
     vertices.push({
       x: readFloat32(),
       y: readFloat32(),
     });
   }
 
-  const segments: Array<VectorSegment> = [];
+  const segments: Array<any> = [];
   for (let i = 0; i < numSegments; i++) {
-    const _styleID = readUint32(); // read and discard styleID
+    readUint32(); // read and discard styleID
     const startVertex = readUint32();
     const startDx = readFloat32();
     const startDy = readFloat32();
@@ -47,11 +45,12 @@ export function bytesToVectorNetwork(bytes: Uint8Array): VectorNetwork {
     });
   }
 
-  const regions: Array<VectorRegion> = [];
+  const regions: Array<any> = [];
   for (let i = 0; i < numRegions; i++) {
     const styleIDWithWindingRule = readUint32();
-    const _styleID = styleIDWithWindingRule >> 1; // discard styleID
-    const windingRule = (styleIDWithWindingRule & 1) === 1 ? "NONZERO" : "EVENODD";
+    // read and discard styleID (styleIDWithWindingRule >> 1)
+    const windingRule =
+      (styleIDWithWindingRule & 1) === 1 ? "NONZERO" : "EVENODD";
 
     const numLoops = readUint32();
     const loops: Array<Array<number>> = [];

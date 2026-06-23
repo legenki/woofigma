@@ -7,10 +7,10 @@ import { applyAutoLayout } from "./auto-layout";
 import { mapEffects } from "./effect-mapper";
 import { mapPaints } from "./paint-mapper";
 import { buildText } from "./text-builder";
-import { bytesToVectorNetwork } from "./vector-networks/decoder";
 import { decomposeTransform } from "./transform";
 import type { TreeNode } from "./tree";
 import { buildTree } from "./tree";
+import { bytesToVectorNetwork } from "./vector-networks/decoder";
 
 export type BuildSummary = {
   built: number;
@@ -57,7 +57,6 @@ export async function buildNodes(
         node = await buildText(change as FigmaTextNodeChange, missingFonts);
       } else if (change.type === "VECTOR") {
         node = figma.createVector();
-        // @ts-ignore - The plugin types don't include FigmaVectorNodeChange explicitly in the union if it's missing, but it is available.
         applyVector(node as VectorNode, change as any, blobs, warnings);
       } else {
         node = figma.createFrame();
@@ -186,17 +185,20 @@ function applyVector(
   const ctx = { blobs, warnings, nodeName: change.name };
   node.fills = mapPaints(change.fillPaints, ctx);
   node.strokes = mapPaints(change.strokePaints, ctx);
-  
+
   if (change.strokeWeight !== undefined) {
     node.strokeWeight = change.strokeWeight;
   }
-  
+
   const effects = mapEffects(change.effects || []);
   if (effects.length > 0) {
     node.effects = effects;
   }
 
-  if (change.vectorData?.vectorNetworkBlob !== undefined && change.vectorData?.vectorNetworkBlob !== null) {
+  if (
+    change.vectorData?.vectorNetworkBlob !== undefined &&
+    change.vectorData?.vectorNetworkBlob !== null
+  ) {
     const blob = blobs[change.vectorData.vectorNetworkBlob];
     if (blob && blob.bytes) {
       try {
@@ -204,7 +206,9 @@ function applyVector(
         // Cast to any to bypass type issues with Figma plugin API types if VectorNetwork is mismatched
         node.vectorNetwork = network as any;
       } catch (e: any) {
-        warnings.push(`Failed to decode vector network for ${change.name}: ${e.message}`);
+        warnings.push(
+          `Failed to decode vector network for ${change.name}: ${e.message}`
+        );
       }
     }
   }

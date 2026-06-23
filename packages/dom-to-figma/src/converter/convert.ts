@@ -32,6 +32,7 @@ export type ConvertContext = {
   fontCache: FontCache;
   imageCache: ImageCache;
   createGuid: () => FigmaGuid;
+  pseudoElt?: "::before" | "::after";
 };
 
 export type ConversionResult = {
@@ -83,6 +84,7 @@ export async function convertElement(
         position,
         imageCache,
         registerBlob,
+        pseudoElt: ctx.pseudoElt,
       });
       return {
         changes: [frameResult.nodeChange],

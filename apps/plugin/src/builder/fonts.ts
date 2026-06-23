@@ -9,9 +9,12 @@ export async function loadFontWithFallback(
     return requested;
   } catch {
     missingFamilies.add(requested.family);
-    
+
     // Try to preserve the requested style with the fallback family
-    const styleFallback: FontName = { family: FALLBACK.family, style: requested.style };
+    const styleFallback: FontName = {
+      family: FALLBACK.family,
+      style: requested.style,
+    };
     try {
       await figma.loadFontAsync(styleFallback);
       return styleFallback;

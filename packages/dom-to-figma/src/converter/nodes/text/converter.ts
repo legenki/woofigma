@@ -112,6 +112,7 @@ type Params = {
     textGradient?: Array<FigmaPaint>;
   };
   fontCache: FontCache;
+  pseudoElt?: "::before" | "::after";
   // When set, this node is a merged inline paragraph: lay out the combined
   // `characters` and emit per-character style runs. The block element passed
   // as `node` supplies the base style (styleID 0).
@@ -136,6 +137,7 @@ export async function nodeToTextNodeChange(
     inheritedProperties,
     textContent,
     fontCache,
+    pseudoElt,
   } = options;
   const isTextNodeValue = isTextNode(node);
 
@@ -146,7 +148,7 @@ export async function nodeToTextNodeChange(
     throw new Error("Element not found");
   }
 
-  const computedStyle = window.getComputedStyle(element);
+  const computedStyle = window.getComputedStyle(element, pseudoElt);
 
   const defaultTextContent = node.textContent?.trim() ?? "";
   const rawText =
