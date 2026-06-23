@@ -17,17 +17,22 @@ export function cssColorToFigmaColor(cssColor: string): {
     return null;
   }
 
-  const color = new Color(cssColor);
+  try {
+    const color = new Color(cssColor);
 
-  return {
-    color: {
-      r: color.srgb[0] ?? 0,
-      g: color.srgb[1] ?? 0,
-      b: color.srgb[2] ?? 0,
-      a: 1,
-    },
-    opacity: Number(color.alpha),
-  };
+    return {
+      color: {
+        r: color.srgb[0] ?? 0,
+        g: color.srgb[1] ?? 0,
+        b: color.srgb[2] ?? 0,
+        a: 1,
+      },
+      opacity: Number(color.alpha),
+    };
+  } catch (_e) {
+    console.warn("Failed to parse color:", cssColor);
+    return null;
+  }
 }
 
 export function createSolidPaint(color: FigmaColor, opacity = 1): FigmaPaint {

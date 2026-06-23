@@ -1,5 +1,5 @@
 import type { ElementKind } from "./classify";
-import { defaultClassify } from "./classify";
+import { defaultClassify, hasOnlyInlineFlowChildren, isInlineParagraph } from "./classify";
 import type { ConversionResult, InheritedProperties } from "./convert";
 import { convertElement } from "./convert";
 import {
@@ -109,7 +109,9 @@ async function walkChildren(
   inheritedProperties: InheritedProperties,
   ctx: WalkContext
 ) {
-  const sortedNodes = sortNodesByStackingOrder(Array.from(element.childNodes));
+  const childNodes = Array.from(element.childNodes);
+  const isFlow = hasOnlyInlineFlowChildren(element) && !isInlineParagraph(element);
+  const sortedNodes = isFlow ? childNodes : sortNodesByStackingOrder(childNodes);
 
   let childNodeIndex = 0;
   for (const node of sortedNodes) {

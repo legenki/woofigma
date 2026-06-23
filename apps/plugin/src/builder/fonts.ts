@@ -9,7 +9,16 @@ export async function loadFontWithFallback(
     return requested;
   } catch {
     missingFamilies.add(requested.family);
-    await figma.loadFontAsync(FALLBACK);
-    return FALLBACK;
+    
+    // Try to preserve the requested style with the fallback family
+    const styleFallback: FontName = { family: FALLBACK.family, style: requested.style };
+    try {
+      await figma.loadFontAsync(styleFallback);
+      return styleFallback;
+    } catch {
+      // If that fails, fall back to Regular
+      await figma.loadFontAsync(FALLBACK);
+      return FALLBACK;
+    }
   }
 }

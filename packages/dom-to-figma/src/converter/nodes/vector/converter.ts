@@ -208,11 +208,19 @@ export function elementToVectorNodeChange(
 
   const computedStyle = window.getComputedStyle(element);
 
-  const fillColor = cssColorToFigmaColor(computedStyle.fill);
+  let fillValue = computedStyle.fill;
+  if (fillValue === "currentColor") {
+    fillValue = computedStyle.color;
+  }
+  const fillColor = cssColorToFigmaColor(fillValue);
   const fillOpacity = Number.parseFloat(computedStyle.fillOpacity);
 
   const strokeWidth = Number.parseFloat(computedStyle.strokeWidth) || 0;
-  const strokeColor = cssColorToFigmaColor(computedStyle.stroke);
+  let strokeValue = computedStyle.stroke;
+  if (strokeValue === "currentColor") {
+    strokeValue = computedStyle.color;
+  }
+  const strokeColor = cssColorToFigmaColor(strokeValue);
   const strokeOpacity = Number.parseFloat(computedStyle.strokeOpacity);
 
   const strokeLinecap = parseStrokeCap(computedStyle.strokeLinecap);
