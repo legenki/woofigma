@@ -8,13 +8,23 @@ export type ImageCache = DedupCache<
 >;
 
 export function createImageCache(imageLoader: ImageLoader): ImageCache {
+  let uniqueCounter = 0;
   return new DedupCache({
     load: (element) =>
       imageLoader({
         src: (element as any).src || (element as any).currentSrc,
         element,
       }).then(processImageFile),
-    toCacheKey: (element) =>
-      (element as any).src || (element as any).currentSrc || "video-no-src",
+    toCacheKey: (element) => {
+      const src = (element as any).src || (element as any).currentSrc;
+      if (src) return src;
+      if (element.tagName.toLowerCase() === "video") {
+        const poster = (element as HTMLVideoElement).poster;
+        if (poster) {
+          return `video-poster-${poster.length}-${poster.substring(0, 50)}-${poster.substring(poster.length - 50)}`;
+        }
+      }
+      return `no-src-${uniqueCounter++}`;
+    },
   });
 }
