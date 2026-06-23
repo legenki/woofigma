@@ -59,18 +59,19 @@ export async function renderAndConvert(
 
 function writeAndWait(iframe: HTMLIFrameElement, html: string): Promise<void> {
   return new Promise((resolve, reject) => {
+    // We add an extra 3 seconds to the overall timeout to account for media loading
     const timer = setTimeout(
       () => reject(new Error("Render timed out")),
-      computeLoadTimeout(html.length)
+      computeLoadTimeout(html.length) + 3000
     );
     iframe.addEventListener(
       "load",
-      () => {
+      async () => {
         // Give bundled-page inline scripts time to unpack into the DOM.
-        setTimeout(() => {
-          clearTimeout(timer);
-          resolve();
-        }, STABILIZE_MS);
+        await new Promise((r) => setTimeout(r, STABILIZE_MS));
+        await waitForMedia(iframe.contentDocument);
+        clearTimeout(timer);
+        resolve();
       },
       { once: true }
     );
@@ -84,4 +85,56 @@ function writeAndWait(iframe: HTMLIFrameElement, html: string): Promise<void> {
     doc.write(html);
     doc.close();
   });
+}
+
+async function waitForMedia(doc: Document | null): Promise<void> {
+  if (!doc) return;
+  const videos = Array.from(doc.querySelectorAll("video"));
+  const images = Array.from(doc.querySelectorAll("img"));
+
+  const promises: Promise<void>[] = [];
+
+  for (const video of videos) {
+    if (video.readyState >= 2) continue; // HAVE_CURRENT_DATA
+    promises.push(
+      new Promise<void>((resolve) => {
+        const onData = () => {
+          video.removeEventListener("loadeddata", onData);
+          video.removeEventListener("error", onData);
+          resolve();
+        };
+        video.addEventListener("loadeddata", onData);
+        video.addEventListener("error", onData);
+      })
+    );
+    if (video.preload === "none") {
+      video.preload = "auto";
+    }
+  }
+
+  for (const img of images) {
+    if (img.complete) continue;
+    promises.push(
+      new Promise<void>((resolve) => {
+        const onData = () => {
+          img.removeEventListener("load", onData);
+          img.removeEventListener("error", onData);
+          resolve();
+        };
+        img.addEventListener("load", onData);
+        img.addEventListener("error", onData);
+      })
+    );
+    if (img.loading === "lazy") {
+      img.loading = "eager";
+    }
+  }
+
+  if (promises.length > 0) {
+    // Wait for all media up to 3000ms max
+    await Promise.race([
+      Promise.all(promises),
+      new Promise((r) => setTimeout(r, 3000)),
+    ]);
+  }
 }

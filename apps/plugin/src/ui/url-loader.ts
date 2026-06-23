@@ -32,9 +32,20 @@ export async function loadHtmlFromUrl(
     throw new Error(`Failed to load URL (HTTP ${response.status}).`);
   }
 
-  const body = await response.text();
+  let body = await response.text();
   if (!looksLikeHtml(response.headers.get("content-type"), body)) {
     throw new Error("That URL did not return HTML.");
   }
+
+  // Inject <base> tag to fix relative URLs
+  const baseTag = `<base href="${targetUrl}">`;
+  if (/<head[^>]*>/i.test(body)) {
+    body = body.replace(/(<head[^>]*>)/i, `$1\n${baseTag}\n`);
+  } else if (/<html[^>]*>/i.test(body)) {
+    body = body.replace(/(<html[^>]*>)/i, `$1\n<head>${baseTag}</head>\n`);
+  } else {
+    body = `${baseTag}\n${body}`;
+  }
+
   return body;
 }
