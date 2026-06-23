@@ -177,27 +177,6 @@ export function App() {
       >
         {busy ? "Importing…" : "Import to Figma"}
       </button>
-      <input
-        className="url"
-        onChange={(e) => setUrl(e.target.value)}
-        placeholder="https://example.com to load by URL"
-        type="url"
-        value={url}
-      />
-      <input
-        className="url"
-        onChange={(e) => setProxy(e.target.value)}
-        placeholder="Optional CORS proxy, e.g. https://your-proxy/?url={url}"
-        type="text"
-        value={proxy}
-      />
-      <button
-        disabled={busy || !url.trim()}
-        onClick={() => run(onImportUrl())}
-        type="button"
-      >
-        {busy ? "Importing…" : "Import from URL"}
-      </button>
       {status && (
         <div className={isError ? "status error" : "status"}>{status}</div>
       )}

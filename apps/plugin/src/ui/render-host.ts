@@ -49,6 +49,9 @@ const customImageLoader = async (request: ImageRequest): Promise<ImageFile> => {
   if (element.tagName.toLowerCase() === "video") {
     const video = element as HTMLVideoElement;
     try {
+      if (video.readyState < 2) {
+        throw new Error("Video not loaded");
+      }
       const canvas = document.createElement("canvas");
       canvas.width = video.videoWidth || video.clientWidth || 300;
       canvas.height = video.videoHeight || video.clientHeight || 150;
