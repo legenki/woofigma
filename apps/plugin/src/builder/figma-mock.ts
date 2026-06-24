@@ -44,12 +44,26 @@ function makeNode(type: string): MockNode {
     width: 0,
     height: 0,
     children: [],
+    parent: null,
     appendChild(child: MockNode) {
+      // Real Figma re-parents on appendChild: detach from any current parent first.
+      const current = child.parent as MockNode | null;
+      if (current) {
+        current.children = current.children.filter((c) => c !== child);
+      }
+      child.parent = node;
       node.children.push(child);
     },
     resize(w: number, h: number) {
       node.width = w;
       node.height = h;
+    },
+    remove() {
+      const current = node.parent as MockNode | null;
+      if (current) {
+        current.children = current.children.filter((c) => c !== node);
+        node.parent = null;
+      }
     },
   } as MockNode;
   if (type === "FRAME") {
