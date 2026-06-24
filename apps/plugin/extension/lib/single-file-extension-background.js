@@ -4512,26 +4512,6 @@
         }
         return {};
       })(e, t.tab);
-    if (e.method.endsWith(".disableGDrive")) {
-      const e = await K();
-      return (
-        H(),
-        await or.revokeAuthToken(
-          e && (e.accessToken || e.revokableAccessToken),
-        ),
-        {}
-      );
-    }
-    if (e.method.endsWith(".disableDropbox")) {
-      const e = await $();
-      return (
-        J(),
-        await rr.revokeAuthToken(
-          e && (e.accessToken || e.revokableAccessToken),
-        ),
-        {}
-      );
-    }
     if (e.method.endsWith(".end")) {
       if (e.hash)
         try {
@@ -4561,15 +4541,7 @@
     const a = t.id;
     try {
       let n;
-      if (
-        e.backgroundSave &&
-        !e.saveToGDrive &&
-        !e.saveToDropbox &&
-        !e.saveWithWebDAV &&
-        !e.saveToGitHub &&
-        !e.saveToRestFormApi &&
-        !e.saveToS3
-      ) {
+      if (e.backgroundSave) {
         const t = await gr(e.filename, e);
         ((e.filenameConflictAction = t.filenameConflictAction),
           (n = t.skipped));
@@ -4596,119 +4568,26 @@
               )
             );
           })(e.content, e.mimeType);
-        else if (e.saveWithWebDAV)
-          o = await hr(
-            e.taskId,
-            lr(e.filename),
-            e.content,
-            e.webDAVURL,
-            e.webDAVUser,
-            e.webDAVPassword,
-            { filenameConflictAction: e.filenameConflictAction, prompt: n },
-          );
-        else if (e.saveWithMCP)
-          o = await wr(
-            e.taskId,
-            lr(e.filename),
-            e.content,
-            e.mcpServerUrl,
-            e.mcpAuthToken,
-            { filenameConflictAction: e.filenameConflictAction, prompt: n },
-          );
-        else if (e.saveToGDrive)
-          await pr(
-            e.taskId,
-            lr(e.filename),
-            new Blob([e.content], { type: e.mimeType }),
-            { forceWebAuthFlow: e.forceWebAuthFlow },
-            {
-              onProgress: (e, t) => Xt(a, e, t),
+        else {
+          if (
+            ((o = await vr(e, {
+              confirmFilename: e.confirmFilename,
+              incognito: t.incognito,
               filenameConflictAction: e.filenameConflictAction,
-              prompt: n,
-            },
-          );
-        else if (e.saveToDropbox)
-          await br(
-            e.taskId,
-            lr(e.filename),
-            new Blob([e.content], { type: e.mimeType }),
-            {
-              onProgress: (e, t) => Xt(a, e, t),
-              filenameConflictAction: e.filenameConflictAction,
-              prompt: n,
-            },
-          );
-        else if (e.saveToGitHub)
-          ((o = await fr(
-            e.taskId,
-            lr(e.filename),
-            e.content,
-            e.githubToken,
-            e.githubUser,
-            e.githubRepository,
-            e.githubBranch,
-            { filenameConflictAction: e.filenameConflictAction, prompt: n },
-          )),
-            await o.pushPromise);
-        else if (e.saveWithCompanion)
-          await Ea({
-            filename: e.filename,
-            content: e.content,
-            title: e.title,
-            url: e.originalUrl,
-            filenameConflictAction: e.filenameConflictAction,
-          });
-        else if (e.saveToRestFormApi)
-          o = await kr(
-            e.taskId,
-            e.filename,
-            e.content,
-            t.url,
-            e.saveToRestFormApiToken,
-            e.saveToRestFormApiUrl,
-            e.saveToRestFormApiFileFieldName,
-            e.saveToRestFormApiUrlFieldName,
-          );
-        else if (e.saveToS3)
-          o = await mr(
-            e.taskId,
-            lr(e.filename),
-            new Blob([e.content], { type: e.mimeType }),
-            e.S3Domain,
-            e.S3Region,
-            e.S3Bucket,
-            e.S3AccessKey,
-            e.S3SecretKey,
-            { filenameConflictAction: e.filenameConflictAction, prompt: n },
-          );
-        else if (
-          ((o = await vr(e, {
-            confirmFilename: e.confirmFilename,
-            incognito: t.incognito,
-            filenameConflictAction: e.filenameConflictAction,
-            filenameReplacementCharacter: e.filenameReplacementCharacter,
-            bookmarkId: e.bookmarkId,
-            replaceBookmarkURL: e.replaceBookmarkURL,
-            includeInfobar: e.includeInfobar,
-            openInfobar: e.openInfobar,
-            infobarPositionAbsolute: e.infobarPositionAbsolute,
-            infobarPositionTop: e.infobarPositionTop,
-            infobarPositionBottom: e.infobarPositionBottom,
-            infobarPositionLeft: e.infobarPositionLeft,
-            infobarPositionRight: e.infobarPositionRight,
-          })),
-          !o)
-        )
-          throw new Error("upload_cancelled");
-        if (
-          (e.bookmarkId &&
-            e.replaceBookmarkURL &&
-            o &&
-            o.url &&
-            (await Ua(e.bookmarkId, { url: o.url })),
-          Jt(a),
-          e.openSavedPage && !e.openEditor)
-        ) {
+              filenameReplacementCharacter: e.filenameReplacementCharacter,
+              includeInfobar: e.includeInfobar,
+              openInfobar: e.openInfobar,
+              infobarPositionAbsolute: e.infobarPositionAbsolute,
+              infobarPositionTop: e.infobarPositionTop,
+              infobarPositionBottom: e.infobarPositionBottom,
+              infobarPositionLeft: e.infobarPositionLeft,
+              infobarPositionRight: e.infobarPositionRight,
+            })),
+            !o)
+          )
+            throw new Error("upload_cancelled");
+        }
+        if ((Jt(a), e.openSavedPage && !e.openEditor)) {
           const a = {
             active: !0,
             url: "/src/ui/pages/viewer.html?blobURI=" + e.url,
@@ -4732,16 +4611,7 @@
     try {
       const o = (e) => yr(a, e);
       let r, i;
-      if (
-        e.backgroundSave &&
-        !e.saveToGDrive &&
-        !e.saveToDropbox &&
-        !e.saveWithWebDAV &&
-        !e.saveWithMCP &&
-        !e.saveToGitHub &&
-        !e.saveToRestFormApi &&
-        !e.sharePage
-      ) {
+      if (e.backgroundSave && !e.foregroundSave) {
         const t = await gr(e.filename, e);
         ((e.filenameConflictAction = t.filenameConflictAction),
           (r = t.skipped));
@@ -4797,91 +4667,11 @@
             embeddedImage: e.embeddedImage,
             url: e.originalUrl,
           });
-        } else if (e.foregroundSave || e.sharePage) {
+        } else if (e.foregroundSave) {
           const t = (await fetch(n)).blob();
           await Ar(e.taskId, e.filename, t, e.pageData.mimeType, a, {
             foregroundSave: e.foregroundSave,
-            sharePage: e.sharePage,
           });
-        } else if (e.saveWithWebDAV) {
-          const t = await (await fetch(n)).blob();
-          i = await hr(
-            e.taskId,
-            lr(e.filename),
-            t,
-            e.webDAVURL,
-            e.webDAVUser,
-            e.webDAVPassword,
-            { filenameConflictAction: e.filenameConflictAction, prompt: o },
-          );
-        } else if (e.saveWithMCP) {
-          const t = await (await fetch(n)).blob();
-          i = await wr(
-            e.taskId,
-            lr(e.filename),
-            t,
-            e.mcpServerUrl,
-            e.mcpAuthToken,
-            { filenameConflictAction: e.filenameConflictAction, prompt: o },
-          );
-        } else if (e.saveToGDrive) {
-          const t = await (await fetch(n)).blob();
-          await pr(
-            e.taskId,
-            lr(e.filename),
-            t,
-            { forceWebAuthFlow: e.forceWebAuthFlow },
-            {
-              onProgress: (e, t) => Xt(a, e, t),
-              filenameConflictAction: e.filenameConflictAction,
-              prompt: o,
-            },
-          );
-        } else if (e.saveToDropbox) {
-          const t = await (await fetch(n)).blob();
-          await br(e.taskId, lr(e.filename), t, {
-            onProgress: (e, t) => Xt(a, e, t),
-            filenameConflictAction: e.filenameConflictAction,
-            prompt: o,
-          });
-        } else if (e.saveToGitHub) {
-          const t = await (await fetch(n)).blob();
-          ((i = await fr(
-            e.taskId,
-            lr(e.filename),
-            t,
-            e.githubToken,
-            e.githubUser,
-            e.githubRepository,
-            e.githubBranch,
-            { filenameConflictAction: e.filenameConflictAction, prompt: o },
-          )),
-            await i.pushPromise);
-        } else if (e.saveToRestFormApi) {
-          const a = await (await fetch(n)).blob();
-          i = await kr(
-            e.taskId,
-            e.filename,
-            a,
-            t.url,
-            e.saveToRestFormApiToken,
-            e.saveToRestFormApiUrl,
-            e.saveToRestFormApiFileFieldName,
-            e.saveToRestFormApiUrlFieldName,
-          );
-        } else if (e.saveToS3) {
-          const t = await (await fetch(n)).blob();
-          i = await mr(
-            e.taskId,
-            lr(e.filename),
-            t,
-            e.S3Domain,
-            e.S3Region,
-            e.S3Bucket,
-            e.S3AccessKey,
-            e.S3SecretKey,
-            { filenameConflictAction: e.filenameConflictAction, prompt: o },
-          );
         } else if (e.backgroundSave)
           ((e.url = n),
             (i = await vr(e, {
@@ -4889,8 +4679,6 @@
               incognito: t.incognito,
               filenameConflictAction: e.filenameConflictAction,
               filenameReplacementCharacter: e.filenameReplacementCharacter,
-              bookmarkId: e.bookmarkId,
-              replaceBookmarkURL: e.replaceBookmarkURL,
               includeInfobar: e.includeInfobar,
               openInfobar: e.openInfobar,
               infobarPositionAbsolute: e.infobarPositionAbsolute,
@@ -4903,15 +4691,7 @@
           const t = await (await fetch(n)).blob();
           await Ar(e.taskId, e.filename, t, e.mimeType, a);
         }
-        if (
-          (e.bookmarkId &&
-            e.replaceBookmarkURL &&
-            i &&
-            i.url &&
-            (await Ua(e.bookmarkId, { url: i.url })),
-          Jt(a),
-          e.openSavedPage && !e.openEditor)
-        ) {
+        if ((Jt(a), e.openSavedPage && !e.openEditor)) {
           const e = {
             active: !0,
             url: "/src/ui/pages/viewer.html?compressed&blobURI=" + n,
@@ -4932,157 +4712,6 @@
   }
   function lr(e) {
     return e.replace(/#/g, "%23");
-  }
-  async function dr(e, t) {
-    let a = await K();
-    const n = {
-      interactive: !0,
-      forceWebAuthFlow: e.forceWebAuthFlow,
-      launchWebAuthFlow: (e) => se(e),
-      extractAuthCode: (e) => ie(e),
-    };
-    return (
-      or.setAuthInfo(a, n),
-      (a && a.accessToken && !t) ||
-        ((a = await or.auth(n)), a ? await V(a) : await H()),
-      a
-    );
-  }
-  async function ur(e) {
-    let t = await $();
-    const a = {
-      launchWebAuthFlow: (e) => se(e),
-      extractAuthCode: (e) => ie(e),
-    };
-    return (
-      rr.setAuthInfo(t),
-      (t && t.accessToken && !e) ||
-        ((t = await rr.auth(a)), t ? await G(t) : await J()),
-      t
-    );
-  }
-  async function fr(
-    e,
-    t,
-    a,
-    n,
-    o,
-    r,
-    i,
-    { filenameConflictAction: s, prompt: c },
-  ) {
-    try {
-      const l = Ca(e);
-      if (!l || !l.cancelled) {
-        const l = new Mn(n, o, r, i);
-        return (
-          Ta(e, () => l.abort()),
-          await l.upload(t, a, { filenameConflictAction: s, prompt: c })
-        );
-      }
-    } catch (e) {
-      throw new Error(e.message + " (GitHub)");
-    }
-  }
-  async function mr(
-    e,
-    t,
-    a,
-    n,
-    o,
-    r,
-    i,
-    s,
-    { filenameConflictAction: c, prompt: l },
-  ) {
-    try {
-      const d = Ca(e);
-      if (!d || !d.cancelled) {
-        const d = new Nn(o, r, i, s, n);
-        return (
-          Ta(e, () => d.abort()),
-          await d.upload(t, a, { filenameConflictAction: c, prompt: l })
-        );
-      }
-    } catch (e) {
-      throw new Error(e.message + " (S3)");
-    }
-  }
-  async function hr(
-    e,
-    t,
-    a,
-    n,
-    o,
-    r,
-    { filenameConflictAction: i, prompt: s },
-  ) {
-    try {
-      const c = Ca(e);
-      if (!c || !c.cancelled) {
-        const c = new pn(n, o, r);
-        return (
-          Ta(e, () => c.abort()),
-          await c.upload(t, a, { filenameConflictAction: i, prompt: s })
-        );
-      }
-    } catch (e) {
-      throw new Error(e.message + " (WebDAV)");
-    }
-  }
-  async function wr(e, t, a, n, o, { filenameConflictAction: r, prompt: i }) {
-    try {
-      const s = Ca(e);
-      if (!s || !s.cancelled) {
-        const s = new ro(n, o);
-        return (
-          Ta(e, () => s.abort()),
-          await s.upload(t, a, { filenameConflictAction: r, prompt: i })
-        );
-      }
-    } catch (e) {
-      throw new Error(e.message + " (MCP)");
-    }
-  }
-  async function pr(e, t, a, n, o) {
-    try {
-      await dr(n);
-      const r = Ca(e);
-      if (!r || !r.cancelled) return await or.upload(t, a, o, (t) => Ta(e, t));
-    } catch (r) {
-      if ("invalid_token" == r.message) {
-        let r;
-        try {
-          r = await or.refreshAuthToken();
-        } catch (e) {
-          if ("unknown_token" != e.message)
-            throw new Error(e.message + " (Google Drive)");
-          r = await dr(n, !0);
-        }
-        return (r ? await V(r) : await H(), await pr(e, t, a, n, o));
-      }
-      throw new Error(r.message + " (Google Drive)");
-    }
-  }
-  async function br(e, t, a, n) {
-    try {
-      await ur();
-      const o = Ca(e);
-      if (!o || !o.cancelled) return await rr.upload(t, a, n, (t) => Ta(e, t));
-    } catch (o) {
-      if ("invalid_token" == o.message) {
-        let o;
-        try {
-          o = await rr.refreshAuthToken();
-        } catch (e) {
-          if ("unknown_token" != e.message)
-            throw new Error(e.message + " (Dropbox)");
-          o = await ur(!0);
-        }
-        return (o ? await G(o) : await J(), await br(e, t, a, n));
-      }
-      throw new Error(o.message + " (Dropbox)");
-    }
   }
   async function gr(e, t) {
     let a,
@@ -5125,23 +4754,11 @@
       );
     }
   }
-  async function kr(e, t, a, n, o, r, i, s) {
-    try {
-      const c = Ca(e);
-      if (!c || !c.cancelled) {
-        const c = new qo(o, r, i, s);
-        return (Ta(e, () => c.abort()), await c.upload(t, a, n));
-      }
-    } catch (e) {
-      throw new Error(e.message + " (RestFormApi)");
-    }
-  }
-  async function Ar(e, t, a, n, o, { foregroundSave: r, sharePage: i } = {}) {
+  async function Ar(e, t, a, n, o, { foregroundSave: r } = {}) {
     const s = bo({
       filename: t,
       taskId: e,
       foregroundSave: r,
-      sharePage: i,
       content: await a.arrayBuffer(),
       mimeType: n,
     });
