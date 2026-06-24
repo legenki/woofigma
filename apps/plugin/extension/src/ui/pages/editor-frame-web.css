@@ -1,10 +1,5 @@
-.single-file-highlight-yellow, .single-file-highlight-yellow-mode ::selection {
-    background-color: #ffff7c !important;
-    color: black !important;
-}
-
-.single-file-highlight-pink, .single-file-highlight-pink-mode ::selection {
-    background-color: #ffbbb6 !important;
+.single-file-highlight-red, .single-file-highlight-red-mode ::selection {
+    background-color: #ff8787 !important;
     color: black !important;
 }
 
@@ -18,7 +13,7 @@
     color: black !important;
 }
 
-span.single-file-highlight-yellow, span.single-file-highlight-pink, span.single-file-highlight-blue, span.single-file-highlight-green {
+span.single-file-highlight-red, span.single-file-highlight-blue, span.single-file-highlight-green {
     display: inline !important;
 }
 
@@ -41,34 +36,7 @@ single-file-note {
     display: contents !important;
 }
 
-.single-file-cut-hover, .single-file-cut-outer-hover, .single-file-cut-selected, .single-file-cut-outer-selected {
-    transition: outline-width 125ms !important;
-    outline-offset: -4px !important;
-    outline-width: 4px !important;
-}
-
-.single-file-cut-hover, .single-file-cut-outer-hover {
-    outline-style: dotted !important;
-}
-
-.single-file-cut-selected, .single-file-cut-outer-selected {
-    outline-style: dashed !important;
-}
-
-.single-file-cut-hover, .single-file-cut-selected {
-    outline-color: red !important;
-}
-
-.single-file-cut-outer-hover, .single-file-cut-outer-selected {
-    outline-color: green !important;
-}
-
-.single-file-cut-mode, .single-file-cut-mode * {
-    pointer-events: auto !important;
-    touch-action: none !important;
-}
-
-.single-file-cut-hover, .single-file-cut-outer-hover, .single-file-remove-highlights-mode .single-file-highlight:hover {
+.single-file-remove-highlights-mode .single-file-highlight:hover {
     cursor: crosshair !important;
 }
 

@@ -119,20 +119,12 @@
     cursor: grabbing;
 }
 
-.note-yellow header {
-    background-color: #f5f545;
+.note-red header {
+    background-color: #ff6b6b;
 }
 
-.note-yellow blockquote {
-    background-color: #ffff7c;
-}
-
-.note-pink header {
-    background-color: #ffa59f;
-}
-
-.note-pink blockquote {
-    background-color: #ffbbb6;
+.note-red blockquote {
+    background-color: #ff8787;
 }
 
 .note-blue header {

@@ -9,12 +9,23 @@ body {
     display: flex;
     flex-direction: column;
     user-select: none;
-    background-color: #efefef;
+    background-color: transparent;
 }
 
 .toolbar {
     display: flex;
-    background-color: transparent;
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 8px;
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .buttons {
@@ -22,21 +33,24 @@ body {
     flex-direction: row;
     margin: 1px;
     flex: none;
+    align-items: center;
 }
 
 img[type=button] {
     cursor: pointer;
-    background-color: #404040;
-    padding: 4px;
-    margin-right: 2px;
-    border-radius: 4px;
+    background-color: rgba(64, 64, 64, 0.5);
+    padding: 6px;
+    margin-right: 4px;
+    border-radius: 8px;
     max-width: 24px;
     max-height: 24px;
+    transition: all 0.2s ease;
 }
 
 @media (hover: hover) {
     img[type=button]:hover {
-        filter: brightness(0.75);
+        background-color: rgba(64, 64, 64, 0.8);
+        filter: brightness(1.1);
     }
 }
 
@@ -45,7 +59,7 @@ img[type=button].format-disabled,
 img[type=button].cut-disabled,
 img[type=button].highlight-disabled,
 img[type=button].remove-highlight-disabled {
-    background-color: #7b7b7b;
+    background-color: rgba(123, 123, 123, 0.5);
     filter: brightness(1.25);
 }
 
@@ -62,60 +76,24 @@ img[type=button].remove-highlight-disabled {
     display: inline-block;
     width: 2px;
     height: 22px;
-    background-color: #404040;
-    margin-left: 2px;
-    margin-right: 2px;
-    margin-top: 6px;
+    background-color: rgba(255, 255, 255, 0.3);
+    margin-left: 4px;
+    margin-right: 6px;
+    border-radius: 1px;
 }
 
 .editor-container {
     position: relative;
     display: flex;
     flex: auto;
+    width: 100%;
+    height: 100vh;
 }
 
 .editor {
-    background-color: white;
+    background-color: transparent;
     flex: auto;
     border: none;
-    border-top-width: 1px;
-    border-top-style: solid;
-    border-top-color: #cccccc;
-}
-
-@media (orientation: portrait) {
-    body {
-        flex-direction: row;
-    }
-
-    .toolbar {
-        flex-direction: column;
-        min-width: 34px;
-        max-width: 34px;
-    }
-
-    .buttons {
-        flex-direction: column;
-    }
-
-    .separator {
-        margin-top: 2px;
-        margin-bottom: 2px;
-        margin-left: 6px;
-        width: 22px;
-        height: 2px;
-    }
-
-    img[type="button"] {
-        margin-right: 0;
-        margin-bottom: 2px;
-    }
-
-    @media (max-height: 495px) {
-        .separator {
-            display: none;
-        }
-    }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -123,12 +101,13 @@ img[type=button].remove-highlight-disabled {
         background-color: #3a3a3a;
     }
 
-    .editor {
-        border-top-color: #4a4a4a;
+    .toolbar {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     img[type=button] {
-        background-color: #1f1f1f;
+        background-color: rgba(31, 31, 31, 0.6);
     }
 
     img[type=button].edit-disabled,
@@ -136,10 +115,10 @@ img[type=button].remove-highlight-disabled {
     img[type=button].cut-disabled,
     img[type=button].highlight-disabled,
     img[type=button].remove-highlight-disabled {
-        background-color: #4a4a4a;
+        background-color: rgba(74, 74, 74, 0.6);
     }
 
     .separator {
-        background-color: #b3b3b3;
+        background-color: rgba(255, 255, 255, 0.2);
     }
 }

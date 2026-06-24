@@ -39,56 +39,35 @@ const INFOBAR_TAGNAME = "single-file-infobar";
 
 const editorElement = document.querySelector(".editor");
 const toolbarElement = document.querySelector(".toolbar");
-const highlightYellowButton = document.querySelector(".highlight-yellow-button");
-const highlightPinkButton = document.querySelector(".highlight-pink-button");
+const highlightRedButton = document.querySelector(".highlight-red-button");
 const highlightBlueButton = document.querySelector(".highlight-blue-button");
 const highlightGreenButton = document.querySelector(".highlight-green-button");
 const highlightButtons = Array.from(document.querySelectorAll(".highlight-button"));
 const toggleNotesButton = document.querySelector(".toggle-notes-button");
 const toggleHighlightsButton = document.querySelector(".toggle-highlights-button");
 const removeHighlightButton = document.querySelector(".remove-highlight-button");
-const addYellowNoteButton = document.querySelector(".add-note-yellow-button");
-const addPinkNoteButton = document.querySelector(".add-note-pink-button");
+const addRedNoteButton = document.querySelector(".add-note-red-button");
 const addBlueNoteButton = document.querySelector(".add-note-blue-button");
 const addGreenNoteButton = document.querySelector(".add-note-green-button");
-const editPageButton = document.querySelector(".edit-page-button");
-const formatPageButton = document.querySelector(".format-page-button");
-const cutInnerPageButton = document.querySelector(".cut-inner-page-button");
-const cutOuterPageButton = document.querySelector(".cut-outer-page-button");
-const undoCutPageButton = document.querySelector(".undo-cut-page-button");
-const undoAllCutPageButton = document.querySelector(".undo-all-cut-page-button");
-const redoCutPageButton = document.querySelector(".redo-cut-page-button");
 const savePageButton = document.querySelector(".save-page-button");
-const printPageButton = document.querySelector(".print-page-button");
-const importMhtButton = document.querySelector(".import-mht-button");
+const moveToFigmaButton = document.querySelector(".move-to-figma-button");
 const lastButton = toolbarElement.querySelector(".buttons:last-of-type [type=button]:last-of-type");
 
 let tabData, tabDataContents = [], downloadParser, scrollY, transform, overflow;
 
-addYellowNoteButton.title = browser.i18n.getMessage("editorAddYellowNote");
-addPinkNoteButton.title = browser.i18n.getMessage("editorAddPinkNote");
+addRedNoteButton.title = "Add Red Note";
 addBlueNoteButton.title = browser.i18n.getMessage("editorAddBlueNote");
 addGreenNoteButton.title = browser.i18n.getMessage("editorAddGreenNote");
-highlightYellowButton.title = browser.i18n.getMessage("editorHighlightYellow");
-highlightPinkButton.title = browser.i18n.getMessage("editorHighlightPink");
+highlightRedButton.title = "Highlight Red";
 highlightBlueButton.title = browser.i18n.getMessage("editorHighlightBlue");
 highlightGreenButton.title = browser.i18n.getMessage("editorHighlightGreen");
 toggleNotesButton.title = browser.i18n.getMessage("editorToggleNotes");
 toggleHighlightsButton.title = browser.i18n.getMessage("editorToggleHighlights");
 removeHighlightButton.title = browser.i18n.getMessage("editorRemoveHighlight");
-editPageButton.title = browser.i18n.getMessage("editorEditPage");
-formatPageButton.title = browser.i18n.getMessage("editorFormatPage");
-cutInnerPageButton.title = browser.i18n.getMessage("editorCutInnerPage");
-cutOuterPageButton.title = browser.i18n.getMessage("editorCutOuterPage");
-undoCutPageButton.title = browser.i18n.getMessage("editorUndoCutPage");
-undoAllCutPageButton.title = browser.i18n.getMessage("editorUndoAllCutPage");
-redoCutPageButton.title = browser.i18n.getMessage("editorRedoCutPage");
 savePageButton.title = browser.i18n.getMessage("editorSavePage");
-printPageButton.title = browser.i18n.getMessage("editorPrintPage");
-importMhtButton.title = browser.i18n.getMessage("editorImportMht");
+if (moveToFigmaButton) moveToFigmaButton.title = "Move to Figma wooFrame";
 
-addYellowNoteButton.onmouseup = () => editorElement.contentWindow.postMessage(JSON.stringify({ method: "addNote", color: "note-yellow" }), "*");
-addPinkNoteButton.onmouseup = () => editorElement.contentWindow.postMessage(JSON.stringify({ method: "addNote", color: "note-pink" }), "*");
+addRedNoteButton.onmouseup = () => editorElement.contentWindow.postMessage(JSON.stringify({ method: "addNote", color: "note-red" }), "*");
 addBlueNoteButton.onmouseup = () => editorElement.contentWindow.postMessage(JSON.stringify({ method: "addNote", color: "note-blue" }), "*");
 addGreenNoteButton.onmouseup = () => editorElement.contentWindow.postMessage(JSON.stringify({ method: "addNote", color: "note-green" }), "*");
 document.addEventListener("mouseup", event => {
@@ -100,12 +79,6 @@ document.addEventListener("mouseup", event => {
 document.onmousemove = toolbarOnTouchMove;
 highlightButtons.forEach(highlightButton => {
 	highlightButton.onmouseup = () => {
-		if (toolbarElement.classList.contains("cut-inner-mode")) {
-			disableCutInnerPage();
-		}
-		if (toolbarElement.classList.contains("cut-outer-mode")) {
-			disableCutOuterPage();
-		}
 		if (toolbarElement.classList.contains("remove-highlight-mode")) {
 			disableRemoveHighlights();
 		}
@@ -137,12 +110,6 @@ toggleHighlightsButton.onmouseup = () => {
 	}
 };
 removeHighlightButton.onmouseup = () => {
-	if (toolbarElement.classList.contains("cut-inner-mode")) {
-		disableCutInnerPage();
-	}
-	if (toolbarElement.classList.contains("cut-outer-mode")) {
-		disableCutOuterPage();
-	}
 	if (removeHighlightButton.classList.contains("remove-highlight-disabled")) {
 		removeHighlightButton.classList.remove("remove-highlight-disabled");
 		toolbarElement.classList.add("remove-highlight-mode");
@@ -154,94 +121,14 @@ removeHighlightButton.onmouseup = () => {
 		disableRemoveHighlights();
 	}
 };
-editPageButton.onmouseup = () => {
-	if (toolbarElement.classList.contains("cut-inner-mode")) {
-		disableCutInnerPage();
-	}
-	if (toolbarElement.classList.contains("cut-outer-mode")) {
-		disableCutOuterPage();
-	}
-	if (editPageButton.classList.contains("edit-disabled")) {
-		enableEditPage();
-	} else {
-		disableEditPage();
-	}
-};
-formatPageButton.onmouseup = () => {
-	if (formatPageButton.classList.contains("format-disabled")) {
-		formatPage();
-	} else {
-		cancelFormatPage();
-	}
-};
-cutInnerPageButton.onmouseup = () => {
-	if (toolbarElement.classList.contains("edit-mode")) {
-		disableEditPage();
-	}
-	if (toolbarElement.classList.contains("cut-outer-mode")) {
-		disableCutOuterPage();
-	}
-	if (cutInnerPageButton.classList.contains("cut-disabled")) {
-		enableCutInnerPage();
-
-	} else {
-		disableCutInnerPage();
-	}
-};
-cutOuterPageButton.onmouseup = () => {
-	if (toolbarElement.classList.contains("edit-mode")) {
-		disableEditPage();
-	}
-	if (toolbarElement.classList.contains("cut-inner-mode")) {
-		disableCutInnerPage();
-	}
-	if (cutOuterPageButton.classList.contains("cut-disabled")) {
-		enableCutOuterPage();
-	} else {
-		disableCutOuterPage();
-	}
-};
-undoCutPageButton.onmouseup = () => {
-	editorElement.contentWindow.postMessage(JSON.stringify({ method: "undoCutPage" }), "*");
-};
-undoAllCutPageButton.onmouseup = () => {
-	editorElement.contentWindow.postMessage(JSON.stringify({ method: "undoAllCutPage" }), "*");
-};
-redoCutPageButton.onmouseup = () => {
-	editorElement.contentWindow.postMessage(JSON.stringify({ method: "redoCutPage" }), "*");
-};
 savePageButton.onmouseup = () => {
 	savePage();
 };
-if (typeof print == "function") {
-	printPageButton.onmouseup = () => {
-		editorElement.contentWindow.postMessage(JSON.stringify({ method: "printPage" }), "*");
+if (moveToFigmaButton) {
+	moveToFigmaButton.onmouseup = () => {
+		alert("Feature coming soon: Export to Figma wooFrame!");
 	};
-} else {
-	printPageButton.remove();
 }
-importMhtButton.onmouseup = async () => {
-	const fileInput = document.createElement("input");
-	fileInput.type = "file";
-	fileInput.accept = ".mht,.mhtml";
-	fileInput.onchange = async () => {
-		if (fileInput.files && fileInput.files[0]) {
-			const file = fileInput.files[0];
-			let filename = file.name || "Untitled.mht";
-			filename = filename.replace(/(\.mhtml|\.mht)$/i, ".html");
-			if (!filename.endsWith(".html")) {
-				filename += ".html";
-			}
-			let content = new TextDecoder().decode(await file.arrayBuffer());
-			editorElement.contentWindow.postMessage(JSON.stringify({
-				method: "importMht",
-				content,
-				filename
-			}), "*");
-		}
-	};
-	fileInput.click();
-};
 
 let toolbarPositionPointer, toolbarMoving, toolbarTranslateMax;
 let orientationPortrait = matchMedia("(orientation: portrait)").matches;
@@ -384,7 +271,6 @@ addEventListener("message", async event => {
 	}
 	if (message.method == "onInit") {
 		tabData.options.disableFormatPage = !message.formatPageEnabled;
-		formatPageButton.hidden = !message.formatPageEnabled;
 		document.title = "[SingleFile] " + message.title;
 		if (message.filename) {
 			tabData.filename = message.filename;
@@ -400,18 +286,6 @@ addEventListener("message", async event => {
 			displayInfobar();
 		}
 		tabData.docSaved = true;
-		if (!message.reset) {
-			const defaultEditorMode = tabData.options.defaultEditorMode;
-			if (defaultEditorMode == "edit") {
-				enableEditPage();
-			} else if (defaultEditorMode == "format" && !tabData.options.disableFormatPage) {
-				formatPage();
-			} else if (defaultEditorMode == "cut") {
-				enableCutInnerPage();
-			} else if (defaultEditorMode == "cut-external") {
-				enableCutOuterPage();
-			}
-		}
 	}
 	if (message.method == "onError") {
 		browser.runtime.sendMessage({ method: "ui.processError", error: message.error });
@@ -589,24 +463,6 @@ async function refreshOptions(profileName) {
 	tabData.options = profiles[profileName];
 }
 
-function disableEditPage() {
-	editPageButton.classList.add("edit-disabled");
-	toolbarElement.classList.remove("edit-mode");
-	editorElement.contentWindow.postMessage(JSON.stringify({ method: "disableEditPage" }), "*");
-}
-
-function disableCutInnerPage() {
-	cutInnerPageButton.classList.add("cut-disabled");
-	toolbarElement.classList.remove("cut-inner-mode");
-	editorElement.contentWindow.postMessage(JSON.stringify({ method: "disableCutInnerPage" }), "*");
-}
-
-function disableCutOuterPage() {
-	cutOuterPageButton.classList.add("cut-disabled");
-	toolbarElement.classList.remove("cut-outer-mode");
-	editorElement.contentWindow.postMessage(JSON.stringify({ method: "disableCutOuterPage" }), "*");
-}
-
 function resetHighlightButtons() {
 	highlightButtons.forEach(highlightButton => highlightButton.classList.add("highlight-disabled"));
 	editorElement.contentWindow.postMessage(JSON.stringify({ method: "disableHighlight" }), "*");
@@ -621,44 +477,6 @@ function disableRemoveHighlights() {
 function displayHighlights() {
 	toggleHighlightsButton.src = "/src/ui/resources/button_highlighter_visible.png";
 	editorElement.contentWindow.postMessage(JSON.stringify({ method: "displayHighlights" }), "*");
-}
-
-function enableEditPage() {
-	editPageButton.classList.remove("edit-disabled");
-	toolbarElement.classList.add("edit-mode");
-	editorElement.contentWindow.postMessage(JSON.stringify({ method: "enableEditPage" }), "*");
-}
-
-function formatPage() {
-	formatPageButton.classList.remove("format-disabled");
-	updatedResources = {};
-	editorElement.contentWindow.postMessage(JSON.stringify({
-		method: "formatPage",
-		applySystemTheme: tabData.options.applySystemTheme,
-		contentWidth: tabData.options.contentWidth
-	}), "*");
-}
-
-function cancelFormatPage() {
-	formatPageButton.classList.add("format-disabled");
-	updatedResources = {};
-	editorElement.contentWindow.postMessage(JSON.stringify({ method: "cancelFormatPage" }), "*");
-}
-
-function enableCutInnerPage() {
-	cutInnerPageButton.classList.remove("cut-disabled");
-	toolbarElement.classList.add("cut-inner-mode");
-	resetHighlightButtons();
-	disableRemoveHighlights();
-	editorElement.contentWindow.postMessage(JSON.stringify({ method: "enableCutInnerPage" }), "*");
-}
-
-function enableCutOuterPage() {
-	cutOuterPageButton.classList.remove("cut-disabled");
-	toolbarElement.classList.add("cut-outer-mode");
-	resetHighlightButtons();
-	disableRemoveHighlights();
-	editorElement.contentWindow.postMessage(JSON.stringify({ method: "enableCutOuterPage" }), "*");
 }
 
 function savePage() {

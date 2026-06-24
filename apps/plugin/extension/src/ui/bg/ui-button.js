@@ -118,17 +118,9 @@ browser.action.onClicked.addListener(async tab => {
 		(tab.workspaceId === undefined || highlightedTab.workspaceId === tab.workspaceId)
 	);
 	if (sameWorkspaceTabs.length <= 1) {
-		toggleSaveTab(tab);
+		business.openEditor(tab);
 	} else {
-		business.saveTabs(sameWorkspaceTabs);
-	}
-
-	function toggleSaveTab(tab) {
-		if (business.isSavingTab(tab)) {
-			business.cancelTab(tab.id);
-		} else {
-			business.saveTabs([tab]);
-		}
+		sameWorkspaceTabs.forEach(t => business.openEditor(t));
 	}
 });
 

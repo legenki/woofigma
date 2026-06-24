@@ -1102,7 +1102,7 @@ import { convert } from "../../lib/mhtml-to-html/mod.js";
 			previousContent = getContent(false, []);
 		}
 		const shadowRoots = {};
-		const classesToPreserve = ["single-file-highlight", "single-file-highlight-yellow", "single-file-highlight-green", "single-file-highlight-pink", "single-file-highlight-blue"];
+		const classesToPreserve = ["single-file-highlight", "single-file-highlight-red", "single-file-highlight-green", "single-file-highlight-blue"];
 		document.querySelectorAll(NOTE_TAGNAME).forEach(containerElement => {
 			shadowRoots[containerElement.dataset.noteId] = containerElement.shadowRoot;
 			const className = "singlefile-note-id-" + containerElement.dataset.noteId;
@@ -1330,8 +1330,7 @@ import { convert } from "../../lib/mhtml-to-html/mod.js";
 
 	function resetHighlightedElement(element) {
 		element.classList.remove(HIGHLIGHT_CLASS);
-		element.classList.remove("single-file-highlight-yellow");
-		element.classList.remove("single-file-highlight-pink");
+		element.classList.remove("single-file-highlight-red");
 		element.classList.remove("single-file-highlight-blue");
 		element.classList.remove("single-file-highlight-green");
 		delete element.dataset.singlefileHighlightId;
