@@ -24,72 +24,30 @@
 /* global browser, fetch, Blob, TextEncoder */
 
 import * as config from "./config.js";
-import * as bookmarks from "./bookmarks.js";
-import * as companion from "./companion.js";
 import * as business from "./business.js";
 import * as editor from "./editor.js";
-import { launchWebAuthFlow, extractAuthCode } from "./tabs-util.js";
 import * as ui from "./../../ui/bg/index.js";
 import * as woleet from "./../../lib/woleet/woleet.js";
-import { GDrive } from "./../../lib/gdrive/gdrive.js";
-import { Dropbox } from "./../../lib/dropbox/dropbox.js";
-import { WebDAV } from "./../../lib/webdav/webdav.js";
-import { GitHub } from "./../../lib/github/github.js";
-import { S3 } from "./../../lib/s3/s3.js";
-import { MCP } from "./../../lib/mcp/mcp.js";
 import { download } from "./download-util.js";
 import * as yabson from "./../../lib/yabson/yabson.js";
-import { RestFormApi } from "../../lib/../lib/rest-form-api/index.js";
 import * as offscreen from "./offscreen.js";
 
 const partialContents = new Map();
 const tabData = new Map();
-const SCOPES = ["https://www.googleapis.com/auth/drive.file"];
 const CONFLICT_ACTION_SKIP = "skip";
 const CONFLICT_ACTION_UNIQUIFY = "uniquify";
 const REGEXP_ESCAPE = /([{}()^$&.*?/+|[\\\\]|\]|-)/g;
-let GDRIVE_CLIENT_ID = "207618107333-h1220p1oasj3050kr5r416661adm091a.apps.googleusercontent.com";
-let GDRIVE_CLIENT_KEY = "VQJ8Gq8Vxx72QyxPyeLtWvUt";
-const DROPBOX_CLIENT_ID = "s50p6litdvuzrtb";
-const DROPBOX_CLIENT_KEY = "i1vzwllesr14fzd";
-
-const gDriveOauth2 = browser.runtime.getManifest().oauth2;
-if (gDriveOauth2) {
-	GDRIVE_CLIENT_ID = gDriveOauth2.client_id;
-	GDRIVE_CLIENT_KEY = gDriveOauth2.client_secret;
-}
-const gDrive = new GDrive(GDRIVE_CLIENT_ID, GDRIVE_CLIENT_KEY, SCOPES);
-const dropbox = new Dropbox(DROPBOX_CLIENT_ID, DROPBOX_CLIENT_KEY);
 
 export {
 	onMessage,
 	downloadPage,
 	testSkipSave,
-	saveToGDrive,
-	saveToGitHub,
-	saveToDropbox,
-	saveWithWebDAV,
-	saveToRestFormApi,
-	saveToS3,
-	saveWithMCP,
 	encodeSharpCharacter
 };
 
 async function onMessage(message, sender) {
 	if (message.method.endsWith(".download")) {
 		return downloadTabPage(message, sender.tab);
-	}
-	if (message.method.endsWith(".disableGDrive")) {
-		const authInfo = await config.getAuthInfo();
-		config.removeAuthInfo();
-		await gDrive.revokeAuthToken(authInfo && (authInfo.accessToken || authInfo.revokableAccessToken));
-		return {};
-	}
-	if (message.method.endsWith(".disableDropbox")) {
-		const authInfo = await config.getDropboxAuthInfo();
-		config.removeDropboxAuthInfo();
-		await dropbox.revokeAuthToken(authInfo && (authInfo.accessToken || authInfo.revokableAccessToken));
-		return {};
 	}
 	if (message.method.endsWith(".end")) {
 		if (message.hash) {
@@ -197,7 +155,7 @@ async function downloadContent(message, tab) {
 	const tabId = tab.id;
 	try {
 		let skipped;
-		if (message.backgroundSave && !message.saveToGDrive && !message.saveToDropbox && !message.saveWithWebDAV && !message.saveToGitHub && !message.saveToRestFormApi && !message.saveToS3) {
+		if (message.backgroundSave) {
 			const testSkip = await testSkipSave(message.filename, message);
 			message.filenameConflictAction = testSkip.filenameConflictAction;
 			skipped = testSkip.skipped;
@@ -212,54 +170,6 @@ async function downloadContent(message, tab) {
 				await editor.open({ tabIndex: tab.index + 1, filename: message.filename, content: message.content, url: message.originalUrl });
 			} else if (message.saveToClipboard) {
 				await offscreen.saveToClipboard(message.content, message.mimeType);
-			} else if (message.saveWithWebDAV) {
-				response = await saveWithWebDAV(message.taskId, encodeSharpCharacter(message.filename), message.content, message.webDAVURL, message.webDAVUser, message.webDAVPassword, { filenameConflictAction: message.filenameConflictAction, prompt });
-			} else if (message.saveWithMCP) {
-				response = await saveWithMCP(message.taskId, encodeSharpCharacter(message.filename), message.content, message.mcpServerUrl, message.mcpAuthToken, { filenameConflictAction: message.filenameConflictAction, prompt });
-			} else if (message.saveToGDrive) {
-				await saveToGDrive(message.taskId, encodeSharpCharacter(message.filename), new Blob([message.content], { type: message.mimeType }), {
-					forceWebAuthFlow: message.forceWebAuthFlow
-				}, {
-					onProgress: (offset, size) => ui.onUploadProgress(tabId, offset, size),
-					filenameConflictAction: message.filenameConflictAction,
-					prompt
-				});
-			} else if (message.saveToDropbox) {
-				await saveToDropbox(message.taskId, encodeSharpCharacter(message.filename), new Blob([message.content], { type: message.mimeType }), {
-					onProgress: (offset, size) => ui.onUploadProgress(tabId, offset, size),
-					filenameConflictAction: message.filenameConflictAction,
-					prompt
-				});
-			} else if (message.saveToGitHub) {
-				response = await saveToGitHub(message.taskId, encodeSharpCharacter(message.filename), message.content, message.githubToken, message.githubUser, message.githubRepository, message.githubBranch, {
-					filenameConflictAction: message.filenameConflictAction,
-					prompt
-				});
-				await response.pushPromise;
-			} else if (message.saveWithCompanion) {
-				await companion.save({
-					filename: message.filename,
-					content: message.content,
-					title: message.title,
-					url: message.originalUrl,
-					filenameConflictAction: message.filenameConflictAction
-				});
-			} else if (message.saveToRestFormApi) {
-				response = await saveToRestFormApi(
-					message.taskId,
-					message.filename,
-					message.content,
-					tab.url,
-					message.saveToRestFormApiToken,
-					message.saveToRestFormApiUrl,
-					message.saveToRestFormApiFileFieldName,
-					message.saveToRestFormApiUrlFieldName
-				);
-			} else if (message.saveToS3) {
-				response = await saveToS3(message.taskId, encodeSharpCharacter(message.filename), new Blob([message.content], { type: message.mimeType }), message.S3Domain, message.S3Region, message.S3Bucket, message.S3AccessKey, message.S3SecretKey, {
-					filenameConflictAction: message.filenameConflictAction,
-					prompt
-				});
 			} else {
 				response = await downloadPage(message, {
 					confirmFilename: message.confirmFilename,
@@ -279,9 +189,6 @@ async function downloadContent(message, tab) {
 				if (!response) {
 					throw new Error("upload_cancelled");
 				}
-			}
-			if (message.bookmarkId && message.replaceBookmarkURL && response && response.url) {
-				await bookmarks.update(message.bookmarkId, { url: response.url });
 			}
 			ui.onEnd(tabId);
 			if (message.openSavedPage && !message.openEditor) {
@@ -315,7 +222,7 @@ async function downloadCompressedContent(message, tab) {
 	try {
 		const prompt = filename => promptFilename(tabId, filename);
 		let skipped, response;
-		if (message.backgroundSave && !message.saveToGDrive && !message.saveToDropbox && !message.saveWithWebDAV && !message.saveWithMCP && !message.saveToGitHub && !message.saveToRestFormApi && !message.sharePage) {
+		if (message.backgroundSave && !message.foregroundSave) {
 			const testSkip = await testSkipSave(message.filename, message);
 			message.filenameConflictAction = testSkip.filenameConflictAction;
 			skipped = testSkip.skipped;
@@ -354,58 +261,10 @@ async function downloadCompressedContent(message, tab) {
 					embeddedImage: message.embeddedImage,
 					url: message.originalUrl
 				});
-			} else if (message.foregroundSave || message.sharePage) {
+			} else if (message.foregroundSave) {
 				const blob = (await fetch(blobURI)).blob();
 				await downloadPageForeground(message.taskId, message.filename, blob, message.pageData.mimeType, tabId, {
-					foregroundSave: message.foregroundSave,
-					sharePage: message.sharePage
-				});
-			} else if (message.saveWithWebDAV) {
-				const blob = await (await fetch(blobURI)).blob();
-				response = await saveWithWebDAV(message.taskId, encodeSharpCharacter(message.filename), blob, message.webDAVURL, message.webDAVUser, message.webDAVPassword, { filenameConflictAction: message.filenameConflictAction, prompt });
-			} else if (message.saveWithMCP) {
-				const blob = await (await fetch(blobURI)).blob();
-				response = await saveWithMCP(message.taskId, encodeSharpCharacter(message.filename), blob, message.mcpServerUrl, message.mcpAuthToken, { filenameConflictAction: message.filenameConflictAction, prompt });
-			} else if (message.saveToGDrive) {
-				const blob = await (await fetch(blobURI)).blob();
-				await saveToGDrive(message.taskId, encodeSharpCharacter(message.filename), blob, {
-					forceWebAuthFlow: message.forceWebAuthFlow
-				}, {
-					onProgress: (offset, size) => ui.onUploadProgress(tabId, offset, size),
-					filenameConflictAction: message.filenameConflictAction,
-					prompt
-				});
-			} else if (message.saveToDropbox) {
-				const blob = await (await fetch(blobURI)).blob();
-				await saveToDropbox(message.taskId, encodeSharpCharacter(message.filename), blob, {
-					onProgress: (offset, size) => ui.onUploadProgress(tabId, offset, size),
-					filenameConflictAction: message.filenameConflictAction,
-					prompt
-				});
-			} else if (message.saveToGitHub) {
-				const blob = await (await fetch(blobURI)).blob();
-				response = await saveToGitHub(message.taskId, encodeSharpCharacter(message.filename), blob, message.githubToken, message.githubUser, message.githubRepository, message.githubBranch, {
-					filenameConflictAction: message.filenameConflictAction,
-					prompt
-				});
-				await response.pushPromise;
-			} else if (message.saveToRestFormApi) {
-				const blob = await (await fetch(blobURI)).blob();
-				response = await saveToRestFormApi(
-					message.taskId,
-					message.filename,
-					blob,
-					tab.url,
-					message.saveToRestFormApiToken,
-					message.saveToRestFormApiUrl,
-					message.saveToRestFormApiFileFieldName,
-					message.saveToRestFormApiUrlFieldName
-				);
-			} else if (message.saveToS3) {
-				const blob = await (await fetch(blobURI)).blob();
-				response = await saveToS3(message.taskId, encodeSharpCharacter(message.filename), blob, message.S3Domain, message.S3Region, message.S3Bucket, message.S3AccessKey, message.S3SecretKey, {
-					filenameConflictAction: message.filenameConflictAction,
-					prompt
+					foregroundSave: message.foregroundSave
 				});
 			} else {
 				if (message.backgroundSave) {
@@ -429,9 +288,6 @@ async function downloadCompressedContent(message, tab) {
 					const blob = await (await fetch(blobURI)).blob();
 					await downloadPageForeground(message.taskId, message.filename, blob, message.mimeType, tabId);
 				}
-			}
-			if (message.bookmarkId && message.replaceBookmarkURL && response && response.url) {
-				await bookmarks.update(message.bookmarkId, { url: response.url });
 			}
 			ui.onEnd(tabId);
 			if (message.openSavedPage && !message.openEditor) {
@@ -465,160 +321,6 @@ function encodeSharpCharacter(path) {
 
 function getRegExp(string) {
 	return string.replace(REGEXP_ESCAPE, "\\$1");
-}
-
-async function getAuthInfo(authOptions, force) {
-	let authInfo = await config.getAuthInfo();
-	const options = {
-		interactive: true,
-		forceWebAuthFlow: authOptions.forceWebAuthFlow,
-		launchWebAuthFlow: options => launchWebAuthFlow(options),
-		extractAuthCode: authURL => extractAuthCode(authURL)
-	};
-	gDrive.setAuthInfo(authInfo, options);
-	if (!authInfo || !authInfo.accessToken || force) {
-		authInfo = await gDrive.auth(options);
-		if (authInfo) {
-			await config.setAuthInfo(authInfo);
-		} else {
-			await config.removeAuthInfo();
-		}
-	}
-	return authInfo;
-}
-
-async function getDropboxAuthInfo(force) {
-	let authInfo = await config.getDropboxAuthInfo();
-	const options = {
-		launchWebAuthFlow: options => launchWebAuthFlow(options),
-		extractAuthCode: authURL => extractAuthCode(authURL)
-	};
-	dropbox.setAuthInfo(authInfo);
-	if (!authInfo || !authInfo.accessToken || force) {
-		authInfo = await dropbox.auth(options);
-		if (authInfo) {
-			await config.setDropboxAuthInfo(authInfo);
-		} else {
-			await config.removeDropboxAuthInfo();
-		}
-	}
-	return authInfo;
-}
-
-async function saveToGitHub(taskId, filename, content, githubToken, githubUser, githubRepository, githubBranch, { filenameConflictAction, prompt }) {
-	try {
-		const taskInfo = business.getTaskInfo(taskId);
-		if (!taskInfo || !taskInfo.cancelled) {
-			const client = new GitHub(githubToken, githubUser, githubRepository, githubBranch);
-			business.setCancelCallback(taskId, () => client.abort());
-			return await client.upload(filename, content, { filenameConflictAction, prompt });
-		}
-	} catch (error) {
-		throw new Error(error.message + " (GitHub)");
-	}
-}
-
-async function saveToS3(taskId, filename, blob, domain, region, bucket, accessKey, secretKey, { filenameConflictAction, prompt }) {
-	try {
-		const taskInfo = business.getTaskInfo(taskId);
-		if (!taskInfo || !taskInfo.cancelled) {
-			const client = new S3(region, bucket, accessKey, secretKey, domain);
-			business.setCancelCallback(taskId, () => client.abort());
-			return await client.upload(filename, blob, { filenameConflictAction, prompt });
-		}
-	} catch (error) {
-		throw new Error(error.message + " (S3)");
-	}
-}
-
-async function saveWithWebDAV(taskId, filename, content, url, username, password, { filenameConflictAction, prompt }) {
-	try {
-		const taskInfo = business.getTaskInfo(taskId);
-		if (!taskInfo || !taskInfo.cancelled) {
-			const client = new WebDAV(url, username, password);
-			business.setCancelCallback(taskId, () => client.abort());
-			return await client.upload(filename, content, { filenameConflictAction, prompt });
-		}
-	} catch (error) {
-		throw new Error(error.message + " (WebDAV)");
-	}
-}
-
-async function saveWithMCP(taskId, filename, content, serverUrl, authToken, { filenameConflictAction, prompt }) {
-	try {
-		const taskInfo = business.getTaskInfo(taskId);
-		if (!taskInfo || !taskInfo.cancelled) {
-			const client = new MCP(serverUrl, authToken);
-			business.setCancelCallback(taskId, () => client.abort());
-			return await client.upload(filename, content, { filenameConflictAction, prompt });
-		}
-	} catch (error) {
-		throw new Error(error.message + " (MCP)");
-	}
-}
-
-async function saveToGDrive(taskId, filename, blob, authOptions, uploadOptions) {
-	try {
-		await getAuthInfo(authOptions);
-		const taskInfo = business.getTaskInfo(taskId);
-		if (!taskInfo || !taskInfo.cancelled) {
-			return await gDrive.upload(filename, blob, uploadOptions, callback => business.setCancelCallback(taskId, callback));
-		}
-	}
-	catch (error) {
-		if (error.message == "invalid_token") {
-			let authInfo;
-			try {
-				authInfo = await gDrive.refreshAuthToken();
-			} catch (error) {
-				if (error.message == "unknown_token") {
-					authInfo = await getAuthInfo(authOptions, true);
-				} else {
-					throw new Error(error.message + " (Google Drive)");
-				}
-			}
-			if (authInfo) {
-				await config.setAuthInfo(authInfo);
-			} else {
-				await config.removeAuthInfo();
-			}
-			return await saveToGDrive(taskId, filename, blob, authOptions, uploadOptions);
-		} else {
-			throw new Error(error.message + " (Google Drive)");
-		}
-	}
-}
-
-async function saveToDropbox(taskId, filename, blob, uploadOptions) {
-	try {
-		await getDropboxAuthInfo();
-		const taskInfo = business.getTaskInfo(taskId);
-		if (!taskInfo || !taskInfo.cancelled) {
-			return await dropbox.upload(filename, blob, uploadOptions, callback => business.setCancelCallback(taskId, callback));
-		}
-	}
-	catch (error) {
-		if (error.message == "invalid_token") {
-			let authInfo;
-			try {
-				authInfo = await dropbox.refreshAuthToken();
-			} catch (error) {
-				if (error.message == "unknown_token") {
-					authInfo = await getDropboxAuthInfo(true);
-				} else {
-					throw new Error(error.message + " (Dropbox)");
-				}
-			}
-			if (authInfo) {
-				await config.setDropboxAuthInfo(authInfo);
-			} else {
-				await config.removeDropboxAuthInfo();
-			}
-			return await saveToDropbox(taskId, filename, blob, uploadOptions);
-		} else {
-			throw new Error(error.message + " (Dropbox)");
-		}
-	}
 }
 
 async function testSkipSave(filename, options) {
@@ -664,25 +366,11 @@ async function downloadPage(pageData, options) {
 	}
 }
 
-async function saveToRestFormApi(taskId, filename, content, url, token, restApiUrl, fileFieldName, urlFieldName) {
-	try {
-		const taskInfo = business.getTaskInfo(taskId);
-		if (!taskInfo || !taskInfo.cancelled) {
-			const client = new RestFormApi(token, restApiUrl, fileFieldName, urlFieldName);
-			business.setCancelCallback(taskId, () => client.abort());
-			return await client.upload(filename, content, url);
-		}
-	} catch (error) {
-		throw new Error(error.message + " (RestFormApi)");
-	}
-}
-
-async function downloadPageForeground(taskId, filename, content, mimeType, tabId, { foregroundSave, sharePage } = {}) {
+async function downloadPageForeground(taskId, filename, content, mimeType, tabId, { foregroundSave } = {}) {
 	const serializer = yabson.getSerializer({
 		filename,
 		taskId,
 		foregroundSave,
-		sharePage,
 		content: await content.arrayBuffer(),
 		mimeType
 	});
