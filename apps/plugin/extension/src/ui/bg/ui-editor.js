@@ -45,7 +45,7 @@ const highlightGreenButton = document.querySelector(".highlight-green-button");
 const highlightButtons = Array.from(document.querySelectorAll(".highlight-button"));
 const toggleNotesButton = document.querySelector(".toggle-notes-button");
 const toggleHighlightsButton = document.querySelector(".toggle-highlights-button");
-const removeHighlightButton = document.querySelector(".remove-highlight-button");
+const clearAllButton = document.querySelector(".clear-all-button");
 const addRedNoteButton = document.querySelector(".add-note-red-button");
 const addBlueNoteButton = document.querySelector(".add-note-blue-button");
 const addGreenNoteButton = document.querySelector(".add-note-green-button");
@@ -63,7 +63,7 @@ highlightBlueButton.title = browser.i18n.getMessage("editorHighlightBlue");
 highlightGreenButton.title = browser.i18n.getMessage("editorHighlightGreen");
 toggleNotesButton.title = browser.i18n.getMessage("editorToggleNotes");
 toggleHighlightsButton.title = browser.i18n.getMessage("editorToggleHighlights");
-removeHighlightButton.title = browser.i18n.getMessage("editorRemoveHighlight");
+clearAllButton.title = "Clear all notes and highlights";
 savePageButton.title = browser.i18n.getMessage("editorSavePage");
 if (moveToFigmaButton) moveToFigmaButton.title = "Move to Figma wooFrame";
 
@@ -79,46 +79,36 @@ document.addEventListener("mouseup", event => {
 document.onmousemove = toolbarOnTouchMove;
 highlightButtons.forEach(highlightButton => {
 	highlightButton.onmouseup = () => {
-		if (toolbarElement.classList.contains("remove-highlight-mode")) {
-			disableRemoveHighlights();
-		}
 		const disabled = highlightButton.classList.contains("highlight-disabled");
 		resetHighlightButtons();
 		if (disabled) {
 			highlightButton.classList.remove("highlight-disabled");
+			highlightButton.classList.add("is-active");
 			editorElement.contentWindow.postMessage(JSON.stringify({ method: "enableHighlight", color: "single-file-highlight-" + highlightButton.dataset.color }), "*");
 		} else {
 			highlightButton.classList.add("highlight-disabled");
+			highlightButton.classList.remove("is-active");
 		}
 	};
 });
 toggleNotesButton.onmouseup = () => {
-	if (toggleNotesButton.getAttribute("src") == "/src/ui/resources/button_note_visible.png") {
-		toggleNotesButton.src = "/src/ui/resources/button_note_hidden.png";
-		editorElement.contentWindow.postMessage(JSON.stringify({ method: "hideNotes" }), "*");
-	} else {
-		toggleNotesButton.src = "/src/ui/resources/button_note_visible.png";
-		editorElement.contentWindow.postMessage(JSON.stringify({ method: "displayNotes" }), "*");
-	}
+	const hidden = toggleNotesButton.classList.toggle("is-active");
+	editorElement.contentWindow.postMessage(JSON.stringify({ method: hidden ? "hideNotes" : "displayNotes" }), "*");
 };
 toggleHighlightsButton.onmouseup = () => {
-	if (toggleHighlightsButton.getAttribute("src") == "/src/ui/resources/button_highlighter_visible.png") {
-		toggleHighlightsButton.src = "/src/ui/resources/button_highlighter_hidden.png";
+	const hidden = toggleHighlightsButton.classList.toggle("is-active");
+	if (hidden) {
 		editorElement.contentWindow.postMessage(JSON.stringify({ method: "hideHighlights" }), "*");
 	} else {
 		displayHighlights();
 	}
 };
-removeHighlightButton.onmouseup = () => {
-	if (removeHighlightButton.classList.contains("remove-highlight-disabled")) {
-		removeHighlightButton.classList.remove("remove-highlight-disabled");
-		toolbarElement.classList.add("remove-highlight-mode");
+clearAllButton.onmouseup = () => {
+	if (confirm("Clear all notes and highlights?")) {
+		editorElement.contentWindow.postMessage(JSON.stringify({ method: "removeAllAnnotations" }), "*");
 		resetHighlightButtons();
-		displayHighlights();
-		editorElement.contentWindow.postMessage(JSON.stringify({ method: "enableRemoveHighlights" }), "*");
-		editorElement.contentWindow.postMessage(JSON.stringify({ method: "displayHighlights" }), "*");
-	} else {
-		disableRemoveHighlights();
+		toggleNotesButton.classList.remove("is-active");
+		toggleHighlightsButton.classList.remove("is-active");
 	}
 };
 savePageButton.onmouseup = () => {
@@ -483,18 +473,15 @@ async function refreshOptions(profileName) {
 }
 
 function resetHighlightButtons() {
-	highlightButtons.forEach(highlightButton => highlightButton.classList.add("highlight-disabled"));
+	highlightButtons.forEach(highlightButton => {
+		highlightButton.classList.add("highlight-disabled");
+		highlightButton.classList.remove("is-active");
+	});
 	editorElement.contentWindow.postMessage(JSON.stringify({ method: "disableHighlight" }), "*");
 }
 
-function disableRemoveHighlights() {
-	toolbarElement.classList.remove("remove-highlight-mode");
-	removeHighlightButton.classList.add("remove-highlight-disabled");
-	editorElement.contentWindow.postMessage(JSON.stringify({ method: "disableRemoveHighlights" }), "*");
-}
-
 function displayHighlights() {
-	toggleHighlightsButton.src = "/src/ui/resources/button_highlighter_visible.png";
+	toggleHighlightsButton.classList.remove("is-active");
 	editorElement.contentWindow.postMessage(JSON.stringify({ method: "displayHighlights" }), "*");
 }
 
