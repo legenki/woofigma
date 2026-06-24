@@ -18,68 +18,83 @@ body {
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 12px;
-    padding: 8px;
+    gap: 4px;
+    padding: 6px;
     z-index: 9999;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #1e1e1e;
+    background: #ffffff;
+    border: 1px solid #e6e6e6;
+    border-radius: 10px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .buttons {
     display: flex;
     flex-direction: row;
-    margin: 1px;
-    flex: none;
     align-items: center;
+    gap: 2px;
 }
 
-img[type=button] {
-    cursor: pointer;
-    background-color: rgba(64, 64, 64, 0.5);
+.tb-btn {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
     padding: 6px;
-    margin-right: 4px;
-    border-radius: 8px;
-    max-width: 24px;
-    max-height: 24px;
-    transition: all 0.2s ease;
+    border-radius: 6px;
+    cursor: pointer;
+    color: inherit;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.tb-btn svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+    pointer-events: none;
+}
+
+.note-color-red {
+    color: #e5484d;
+}
+
+.note-color-green {
+    color: #30a46c;
+}
+
+.note-color-blue {
+    color: #0091ff;
 }
 
 @media (hover: hover) {
-    img[type=button]:hover {
-        background-color: rgba(64, 64, 64, 0.8);
-        filter: brightness(1.1);
+    .tb-btn:hover {
+        background-color: rgba(0, 0, 0, 0.06);
     }
 }
 
-img[type=button].edit-disabled,
-img[type=button].format-disabled,
-img[type=button].cut-disabled,
-img[type=button].highlight-disabled,
-img[type=button].remove-highlight-disabled {
-    background-color: rgba(123, 123, 123, 0.5);
-    filter: brightness(1.25);
+.tb-btn.is-active {
+    background-color: rgba(0, 145, 255, 0.14);
+    color: #0091ff;
+}
+
+.tb-btn.highlight-disabled {
+    opacity: 0.55;
 }
 
 @media (hover: hover) {
-    img[type=button].edit-disabled:hover,
-    img[type=button].cut-disabled:hover,
-    .toolbar:not(.cut-inner-mode):not(.remove-highlight-mode) img[type=button].highlight-disabled:hover,
-    .toolbar:not(.cut-inner-mode) img[type=button].remove-highlight-disabled:hover {
-        filter: brightness(0.875);
+    .tb-btn.highlight-disabled:hover {
+        opacity: 1;
     }
 }
 
 .separator {
-    display: inline-block;
-    width: 2px;
-    height: 22px;
-    background-color: rgba(255, 255, 255, 0.3);
-    margin-left: 4px;
-    margin-right: 6px;
-    border-radius: 1px;
+    width: 1px;
+    height: 20px;
+    background-color: #e6e6e6;
+    margin: 0 4px;
 }
 
 .editor-container {
@@ -98,27 +113,40 @@ img[type=button].remove-highlight-disabled {
 
 @media (prefers-color-scheme: dark) {
     body {
-        background-color: #3a3a3a;
+        background-color: #1e1e1e;
     }
 
     .toolbar {
-        background: rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #e6e6e6;
+        background: #2c2c2c;
+        border: 1px solid #3d3d3d;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
     }
 
-    img[type=button] {
-        background-color: rgba(31, 31, 31, 0.6);
+    .note-color-red {
+        color: #ff6369;
     }
 
-    img[type=button].edit-disabled,
-    img[type=button].format-disabled,
-    img[type=button].cut-disabled,
-    img[type=button].highlight-disabled,
-    img[type=button].remove-highlight-disabled {
-        background-color: rgba(74, 74, 74, 0.6);
+    .note-color-green {
+        color: #3dd68c;
+    }
+
+    .note-color-blue {
+        color: #52a9ff;
+    }
+
+    @media (hover: hover) {
+        .tb-btn:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+    }
+
+    .tb-btn.is-active {
+        background-color: rgba(82, 169, 255, 0.2);
+        color: #52a9ff;
     }
 
     .separator {
-        background-color: rgba(255, 255, 255, 0.2);
+        background-color: #3d3d3d;
     }
 }
