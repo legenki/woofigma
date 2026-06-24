@@ -15,8 +15,8 @@
 **No automated tests, no build step.** Editing `src/` alone does NOT change runtime behavior — the manifest loads pre-built bundles. Every functional change must be applied to BOTH the `src/` file (reference) AND the corresponding loaded bundle. Verify with `node --check <file>` and manual smoke testing.
 
 **Loaded bundles (from manifest + HTML):**
-- SW (background): `lib/single-file-extension-background.js` — **contains the live destination dispatch + `saveToX` functions.**
-- `lib/single-file-extension.js` — imported via `importScripts(...)` at `src/core/bg/business.js:42` into the SW; also contains destination dispatch refs.
+- SW (background): `lib/single-file-extension-background.js` — **contains the live destination dispatch + `saveToX` functions, and is NOT minified** (5682 lines, short formatted lines, 2-space indent — e.g. `else if (e.saveToGDrive)` at ~4618, `saveToGDrive: !1,` defaults at ~703). Edit it like ordinary source; this is where the real Blob→cloud network calls live. **This is the only privacy-material bundle.**
+- `lib/single-file-extension.js` — imported via `importScripts(...)` at `src/core/bg/business.js:42`. **Minified (one line, ~42 KB) but only passes flags** (`saveToGDrive: e.saveToGDrive`) and holds `WebDAV` option-field names. It makes **no** network calls (no `googleapis`/`api.dropbox`/`amazonaws`/`fetch` for these) and defines **no** `saveToX` functions. Once the SW-bundle dispatch is removed these flags are inert. **Touching it is OPTIONAL cosmetic cleanup, not required for correctness or privacy.**
 - Content scripts (`single-file-frames.bundle.js`, `single-file-bootstrap.bundle.js`, `single-file-hooks-frames.js`) — **no destination code** (capture engine only). Do NOT touch.
 - `lib/single-file.js`, `lib/single-file-extension-editor-helper.js` — only 1 incidental `googleapis` token each (not dispatch). Do NOT touch.
 
@@ -134,53 +134,78 @@ git commit -m "refactor(extension): remove cloud destination dispatch and functi
 
 ---
 
-## Task 3: Mirror the downloads.js removal in the loaded bundles
+## Task 3: Mirror the downloads.js removal in the SW bundle
 
 **Files:**
-- Modify: `lib/single-file-extension-background.js`
-- Modify: `lib/single-file-extension.js`
+- Modify: `lib/single-file-extension-background.js` (readable, NOT minified)
 
-This is minified-bundle surgery. Work one destination token at a time; re-run `node --check` after each.
+The SW bundle is normally formatted (short lines, 2-space indent) — edit it like ordinary source, not as minified surgery. It is the **only** bundle that actually performs the Blob→cloud network calls, so it is the privacy-material one. The minified `single-file-extension.js` only passes inert flags and is handled (optionally) in Task 3b.
 
 - [ ] **Step 1: Locate destination dispatch + functions in the SW bundle**
 
-Run: `grep -n "saveToGDrive\|saveToDropbox\|saveWithWebDAV\|saveToS3\|saveToGitHub\|saveToRestFormApi\|saveWithMCP\|saveWithCompanion" apps/plugin/extension/lib/single-file-extension-background.js`
+Run: `grep -n "else if (e.saveToGDrive\|else if (e.saveToDropbox\|else if (e.saveWithWebDAV\|else if (e.saveWithMCP\|else if (e.saveToGitHub\|else if (e.saveWithCompanion\|else if (e.saveToRestFormApi\|else if (e.saveToS3" apps/plugin/extension/lib/single-file-extension-background.js`
+Also: `grep -n "saveToGDrive: !1\|function.*saveToGDrive\|saveToGDrive(" apps/plugin/extension/lib/single-file-extension-background.js`
 Read each match's surrounding statement with `sed -n`.
 
-- [ ] **Step 2: Remove the dispatch branches in the SW bundle**
+- [ ] **Step 2: Simplify the early-return guard**
 
-For each `else if(e.saveToGDrive)…` style branch in the minified `downloadContent` equivalent, delete the branch, preserving the `saveToClipboard`/openEditor/default branches and surrounding `if/else` validity. After each deletion run:
+Find the guard (mirror of source line ~200), e.g.:
+```javascript
+if (e.backgroundSave && !e.saveToGDrive && !e.saveToDropbox && !e.saveWithWebDAV && !e.saveToGitHub && !e.saveToRestFormApi && !e.saveToS3)
+```
+Replace with `if (e.backgroundSave)`.
+
+- [ ] **Step 3: Remove the dispatch branches in the SW bundle**
+
+Delete each `else if (e.saveWithWebDAV) …`, `else if (e.saveWithMCP) …`, `else if (e.saveToGDrive) …`, `else if (e.saveToDropbox) …`, `else if (e.saveToGitHub) …`, `else if (e.saveWithCompanion) …`, `else if (e.saveToRestFormApi) …`, `else if (e.saveToS3) …` branch, plus the trailing `if (e.bookmarkId && e.replaceBookmarkURL …)` block. KEEP the `if (e.openEditor)`, `else if (e.saveToClipboard)`, and final default-download branches. After each deletion run:
 ```bash
 node --check apps/plugin/extension/lib/single-file-extension-background.js
 ```
-Expected: valid after each edit. If invalid, revert that single edit and re-inspect bracket balance.
+Expected: valid after each edit. If invalid, revert that single edit and re-check braces.
 
-- [ ] **Step 3: Remove the destination function definitions in the SW bundle**
+- [ ] **Step 4: Remove the destination function definitions in the SW bundle**
 
-Delete the minified definitions corresponding to `saveToGitHub`, `saveToS3`, `saveWithWebDAV`, `saveWithMCP`, `saveToGDrive`, `saveToDropbox`, `saveToRestFormApi`, `getDropboxAuthInfo`, `getAuthInfo`. Re-run `node --check` after each.
+Delete the readable definitions for `saveToGitHub`, `saveToS3`, `saveWithWebDAV`, `saveWithMCP`, `saveToGDrive`, `saveToDropbox`, `saveToRestFormApi`, `getDropboxAuthInfo`, `getAuthInfo`. Re-run `node --check` after each.
 
-- [ ] **Step 4: Repeat for single-file-extension.js**
-
-Run: `grep -n "saveToGDrive\|saveToDropbox\|saveWithWebDAV\|saveToS3" apps/plugin/extension/lib/single-file-extension.js`
-Remove the dispatch/function refs the same way. Run `node --check apps/plugin/extension/lib/single-file-extension.js` after each.
-
-- [ ] **Step 5: Verify both bundles are clean**
+- [ ] **Step 5: Verify the SW bundle is privacy-clean**
 
 Run:
 ```bash
-grep -c -iE "saveToGDrive|saveToDropbox|saveWithWebDAV|saveToS3|saveToGitHub|saveToRestFormApi|saveWithMCP|saveWithCompanion" apps/plugin/extension/lib/single-file-extension-background.js apps/plugin/extension/lib/single-file-extension.js
+grep -c -iE "googleapis|api.dropbox|content.dropboxapi|amazonaws" apps/plugin/extension/lib/single-file-extension-background.js
 ```
-Expected: `0` for both.
+Expected: `0` (no cloud endpoints remain — this is the claim the privacy policy depends on).
 
 - [ ] **Step 6: Smoke test the KEEP paths in the loaded extension**
 
-Reload the extension. Verify: editor opens, Save downloads `.html`, Move to Figma copies to clipboard and pastes into the Figma plugin. If any break, the bundle edit removed too much — revert and redo more narrowly.
+Reload the extension. Verify: editor opens, Save downloads `.html`, Move to Figma copies to clipboard and pastes into the Figma plugin. If any break, a bundle edit removed too much — revert and redo more narrowly.
 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add apps/plugin/extension/lib/single-file-extension-background.js apps/plugin/extension/lib/single-file-extension.js
-git commit -m "refactor(extension): remove cloud destination code from loaded bundles"
+git add apps/plugin/extension/lib/single-file-extension-background.js
+git commit -m "refactor(extension): remove cloud destination code from sw bundle"
+```
+
+---
+
+## Task 3b (OPTIONAL): Cosmetic flag cleanup in the minified bundle
+
+`lib/single-file-extension.js` is minified and only **passes** `saveToX` flags (no network calls, no `saveToX` functions). After Task 3 these flags are inert, so this task is optional cleanup — skip it if the minified edits feel risky; it does not affect correctness or privacy.
+
+- [ ] **Step 1: See the flag-passing sites**
+
+Run: `grep -o ".\{30\}saveToGDrive.\{40\}" apps/plugin/extension/lib/single-file-extension.js`
+Confirm they are object-literal field copies (`saveToGDrive:e.saveToGDrive`), not function calls.
+
+- [ ] **Step 2: (Optional) remove the inert flag fields**
+
+If cleaning: remove the `saveToGDrive:e.saveToGDrive,` style fields and `WebDAV` option-field names, one at a time, running `node --check apps/plugin/extension/lib/single-file-extension.js` after each. On any doubt, revert — these fields are harmless.
+
+- [ ] **Step 3: Commit (only if changed)**
+
+```bash
+git add apps/plugin/extension/lib/single-file-extension.js
+git commit -m "chore(extension): drop inert destination flags from minified bundle"
 ```
 
 ---
@@ -307,11 +332,17 @@ git commit -m "refactor(extension): drop bookmarks, companion, and unused option
 
 - [ ] **Step 1: Global dangling-reference scan**
 
-Run:
+Run (src + the SW bundle — the privacy-material targets):
 ```bash
-grep -rniE "saveToGDrive|saveToDropbox|saveWithWebDAV|saveToS3|saveToGitHub|saveToRestFormApi|saveWithMCP|saveWithCompanion|sharePage|getDropboxAuthInfo" apps/plugin/extension/src apps/plugin/extension/lib/single-file-extension-background.js apps/plugin/extension/lib/single-file-extension.js
+grep -rniE "saveToGDrive|saveToDropbox|saveWithWebDAV|saveToS3|saveToGitHub|saveToRestFormApi|saveWithMCP|saveWithCompanion|sharePage|getDropboxAuthInfo" apps/plugin/extension/src apps/plugin/extension/lib/single-file-extension-background.js
 ```
-Expected: no matches (ignore matches inside `_locales/*/messages.json` translation strings — those are harmless display labels; optionally clean later).
+Expected: no matches. (If Task 3b was skipped, `single-file-extension.js` may still contain inert flag tokens — that's acceptable; it makes no network calls. Also ignore `_locales/*/messages.json` translation strings — harmless display labels.)
+
+Then confirm the privacy-critical check — no cloud endpoints anywhere in the loaded SW bundle:
+```bash
+grep -c -iE "googleapis|api.dropbox|content.dropboxapi|amazonaws" apps/plugin/extension/lib/single-file-extension-background.js
+```
+Expected: `0`.
 
 - [ ] **Step 2: Syntax check every edited JS file**
 
@@ -427,8 +458,8 @@ git commit -m "docs: add local-only privacy policy"
 ## Self-Review notes (completed by plan author)
 
 - **Coverage:** removal of every named destination (GDrive/Dropbox/WebDAV/S3/GitHub/REST/MCP/Companion/Share/Bookmarks) is covered across src (Tasks 2,4,5,6) and bundles (Tasks 3,4,6); privacy policy is Task 8, written to match the local-only end state. KEEP paths (file/clipboard/editor) explicitly preserved and smoke-tested (Tasks 1,3,5,6,7).
-- **Bundle reality:** plan reflects that `lib/*.js` are pre-built (no build step), so every functional change is applied to both src and the loaded SW bundle (`single-file-extension-background.js`) + `single-file-extension.js`; content-script bundles are confirmed destination-free and left untouched.
+- **Bundle reality:** `lib/*.js` are pre-built (no build step). The privacy-material SW bundle (`single-file-extension-background.js`) is **NOT minified** — it holds the real Blob→cloud calls and is edited like ordinary source (Task 3). The minified `single-file-extension.js` only passes inert flags (no network, no `saveToX` defs), so cleaning it is OPTIONAL (Task 3b). Content-script bundles are destination-free and untouched.
 - **Name consistency:** flag/function names (`saveToGDrive`, `saveToDropbox`, `saveWithWebDAV`, `saveToS3`, `saveToGitHub`, `saveToRestFormApi`, `saveWithMCP`, `saveWithCompanion`, `getDropboxAuthInfo`) used identically in every task and in the final grep sweep.
 - **No automated tests** by design (biome-ignored vendored fork, iframe/SW UI); verification is `node --check` + scripted manual smoke tests, with Task 1 establishing the baseline and Task 7 the acceptance gate.
-- **Risk note:** minified-bundle surgery (Task 3) is the highest-risk step; the plan mitigates with one-token-at-a-time edits, `node --check` after each, and immediate smoke testing of KEEP paths, with explicit revert guidance.
+- **Risk note (revised):** the SW bundle is readable, so Task 3 is ordinary source editing, not minified surgery — much lower risk than originally assumed. The only minified file (`single-file-extension.js`) is inert flag-passing and made OPTIONAL (Task 3b). Mitigations retained: edit one branch/function at a time, `node --check` after each, smoke-test KEEP paths, revert on doubt.
 ```
