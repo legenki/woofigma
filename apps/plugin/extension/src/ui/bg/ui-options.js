@@ -109,15 +109,10 @@ const autoSaveDiscardLabel = document.getElementById("autoSaveDiscardLabel");
 const autoSaveRemoveLabel = document.getElementById("autoSaveRemoveLabel");
 const autoSaveRepeatLabel = document.getElementById("autoSaveRepeatLabel");
 const autoSaveRepeatDelayLabel = document.getElementById("autoSaveRepeatDelayLabel");
-const autoSaveExternalSaveLabel = document.getElementById("autoSaveExternalSaveLabel");
 const removeAlternativeFontsLabel = document.getElementById("removeAlternativeFontsLabel");
 const removeAlternativeImagesLabel = document.getElementById("removeAlternativeImagesLabel");
 const removeAlternativeMediasLabel = document.getElementById("removeAlternativeMediasLabel");
-const saveCreatedBookmarksLabel = document.getElementById("saveCreatedBookmarksLabel");
 const passReferrerOnErrorLabel = document.getElementById("passReferrerOnErrorLabel");
-const replaceBookmarkURLLabel = document.getElementById("replaceBookmarkURLLabel");
-const allowedBookmarkFoldersLabel = document.getElementById("allowedBookmarkFoldersLabel");
-const ignoredBookmarkFoldersLabel = document.getElementById("ignoredBookmarkFoldersLabel");
 const createRootDirectoryLabel = document.getElementById("createRootDirectoryLabel");
 const disableCompressionLabel = document.getElementById("disableCompressionLabel");
 const preventAppendedDataLabel = document.getElementById("preventAppendedDataLabel");
@@ -140,7 +135,6 @@ const networkLabel = document.getElementById("networkLabel");
 const blockResourcesLabel = document.getElementById("blockResourcesLabel");
 const acceptHeadersLabel = document.getElementById("acceptHeadersLabel");
 const destinationLabel = document.getElementById("destinationLabel");
-const bookmarksLabel = document.getElementById("bookmarksLabel");
 const autoSaveLabel = document.getElementById("autoSaveLabel");
 const autoSettingsLabel = document.getElementById("autoSettingsLabel");
 const autoSettingsUrlLabel = document.getElementById("autoSettingsUrlLabel");
@@ -253,15 +247,10 @@ const autoSaveRemoveInput = document.getElementById("autoSaveRemoveInput");
 const autoSaveLoadOrUnloadInput = document.getElementById("autoSaveLoadOrUnloadInput");
 const autoSaveRepeatInput = document.getElementById("autoSaveRepeatInput");
 const autoSaveRepeatDelayInput = document.getElementById("autoSaveRepeatDelayInput");
-const autoSaveExternalSaveInput = document.getElementById("autoSaveExternalSaveInput");
 const removeAlternativeFontsInput = document.getElementById("removeAlternativeFontsInput");
 const removeAlternativeImagesInput = document.getElementById("removeAlternativeImagesInput");
 const removeAlternativeMediasInput = document.getElementById("removeAlternativeMediasInput");
-const saveCreatedBookmarksInput = document.getElementById("saveCreatedBookmarksInput");
 const passReferrerOnErrorInput = document.getElementById("passReferrerOnErrorInput");
-const replaceBookmarkURLInput = document.getElementById("replaceBookmarkURLInput");
-const allowedBookmarkFoldersInput = document.getElementById("allowedBookmarkFoldersInput");
-const ignoredBookmarkFoldersInput = document.getElementById("ignoredBookmarkFoldersInput");
 const fileFormatSelectInput = document.getElementById("fileFormatSelectInput");
 const createRootDirectoryInput = document.getElementById("createRootDirectoryInput");
 const disableCompressionInput = document.getElementById("disableCompressionInput");
@@ -487,7 +476,6 @@ importButton.addEventListener("click", () => {
 			Object.keys(config.profiles).forEach(profileName => {
 				const profile = config.profiles[profileName];
 				profile.saveToClipboard = false;
-				profile.saveCreatedBookmarks = false;
 				profile.passReferrerOnError = false;
 			});
 			await browser.runtime.sendMessage({ method: "config.importConfig", config });
@@ -523,10 +511,8 @@ expandAllButton.addEventListener("click", () => {
 	}
 	document.querySelectorAll("details").forEach(detailElement => detailElement.open = Boolean(expandAllButton.className));
 }, false);
-saveToFilesystemInput.addEventListener("click", () => disableDestinationPermissions(["nativeMessaging"]), false);
-saveToClipboardInput.addEventListener("click", () => disableDestinationPermissions(["nativeMessaging"]), false);
-saveCreatedBookmarksInput.addEventListener("click", saveCreatedBookmarks, false);
-autoSaveExternalSaveInput.addEventListener("click", () => enableExternalSave(autoSaveExternalSaveInput), false);
+saveToFilesystemInput.addEventListener("click", () => disableDestinationPermissions([]), false);
+saveToClipboardInput.addEventListener("click", () => disableDestinationPermissions([]), false);
 saveToClipboardInput.addEventListener("click", onClickSaveToClipboard, false);
 addProofInput.addEventListener("click", async event => {
 	if (addProofInput.checked) {
@@ -570,8 +556,7 @@ document.body.onchange = async event => {
 		target != ruleEditUrlInput &&
 		target != ruleEditProfileInput &&
 		target != ruleEditAutoSaveProfileInput &&
-		target != showAutoSaveProfileInput &&
-		target != saveCreatedBookmarksInput) {
+		target != showAutoSaveProfileInput) {
 		if (target != profileNamesInput && target != showAllProfilesInput) {
 			await update();
 		}
@@ -666,15 +651,10 @@ autoSaveDiscardLabel.textContent = browser.i18n.getMessage("optionAutoSaveDiscar
 autoSaveRemoveLabel.textContent = browser.i18n.getMessage("optionAutoSaveRemove");
 autoSaveRepeatLabel.textContent = browser.i18n.getMessage("optionAutoSaveRepeat");
 autoSaveRepeatDelayLabel.textContent = browser.i18n.getMessage("optionAutoSaveRepeatDelay");
-autoSaveExternalSaveLabel.textContent = browser.i18n.getMessage("optionAutoSaveExternalSave");
 removeAlternativeFontsLabel.textContent = browser.i18n.getMessage("optionRemoveAlternativeFonts");
 removeAlternativeImagesLabel.textContent = browser.i18n.getMessage("optionRemoveAlternativeImages");
 removeAlternativeMediasLabel.textContent = browser.i18n.getMessage("optionRemoveAlternativeMedias");
-saveCreatedBookmarksLabel.textContent = browser.i18n.getMessage("optionSaveCreatedBookmarks");
 passReferrerOnErrorLabel.textContent = browser.i18n.getMessage("optionPassReferrerOnError");
-replaceBookmarkURLLabel.textContent = browser.i18n.getMessage("optionReplaceBookmarkURL");
-allowedBookmarkFoldersLabel.textContent = browser.i18n.getMessage("optionAllowedBookmarkFolders");
-ignoredBookmarkFoldersLabel.textContent = browser.i18n.getMessage("optionIgnoredBookmarkFolders");
 createRootDirectoryLabel.textContent = browser.i18n.getMessage("optionCreateRootDirectory");
 disableCompressionLabel.textContent = browser.i18n.getMessage("optionDisableCompression");
 preventAppendedDataLabel.textContent = browser.i18n.getMessage("optionPreventAppendedData");
@@ -698,7 +678,6 @@ networkLabel.textContent = browser.i18n.getMessage("optionsNetworkSubTitle");
 blockResourcesLabel.textContent = browser.i18n.getMessage("optionsBlockedResources");
 acceptHeadersLabel.textContent = browser.i18n.getMessage("optionsAcceptHeaders");
 destinationLabel.textContent = browser.i18n.getMessage("optionsDestinationSubTitle");
-bookmarksLabel.textContent = browser.i18n.getMessage("optionsBookmarkSubTitle");
 autoSaveLabel.textContent = browser.i18n.getMessage("optionsAutoSaveSubTitle");
 miscLabel.textContent = browser.i18n.getMessage("optionsMiscSubTitle");
 helpLabel.textContent = browser.i18n.getMessage("optionsHelpLink");
@@ -778,10 +757,9 @@ function init() {
 }
 
 async function refresh(profileName) {
-	const [profiles, rules, companionState] = await Promise.all([
+	const [profiles, rules] = await Promise.all([
 		browser.runtime.sendMessage({ method: "config.getProfiles" }),
-		browser.runtime.sendMessage({ method: "config.getRules" }),
-		browser.runtime.sendMessage({ method: "companion.state" })]);
+		browser.runtime.sendMessage({ method: "config.getRules" })]);
 	const selectedProfileName = profileName || profileNamesInput.value || DEFAULT_PROFILE_NAME;
 	Array.from(profileNamesInput.childNodes).forEach(node => node.remove());
 	profileNamesInput.options.length = 0;
@@ -944,22 +922,13 @@ async function refresh(profileName) {
 	autoSaveRepeatInput.checked = profileOptions.autoSaveRepeat;
 	autoSaveRepeatDelayInput.value = profileOptions.autoSaveRepeatDelay;
 	autoSaveRepeatDelayInput.disabled = !profileOptions.autoSaveRepeat;
-	autoSaveExternalSaveInput.checked = profileOptions.autoSaveExternalSave;
-	autoSaveExternalSaveInput.parentElement.hidden = !companionState.enabled;
 	removeAlternativeFontsInput.checked = profileOptions.removeAlternativeFonts;
 	removeAlternativeImagesInput.checked = profileOptions.removeAlternativeImages;
 	groupDuplicateImagesInput.checked = profileOptions.groupDuplicateImages;
 	imageReductionFactorInput.value = profileOptions.imageReductionFactor;
 	customShortcutInput.value = profileOptions.customShortcut || "";
 	removeAlternativeMediasInput.checked = profileOptions.removeAlternativeMedias;
-	saveCreatedBookmarksInput.checked = profileOptions.saveCreatedBookmarks;
 	passReferrerOnErrorInput.checked = profileOptions.passReferrerOnError;
-	replaceBookmarkURLInput.checked = profileOptions.replaceBookmarkURL;
-	replaceBookmarkURLInput.disabled = !profileOptions.saveCreatedBookmarks;
-	allowedBookmarkFoldersInput.value = profileOptions.allowedBookmarkFolders.map(folder => folder.replace(/,/g, "\\,")).join(",");
-	allowedBookmarkFoldersInput.disabled = !profileOptions.saveCreatedBookmarks;
-	ignoredBookmarkFoldersInput.value = profileOptions.ignoredBookmarkFolders.map(folder => folder.replace(/,/g, "\\,")).join(",");
-	ignoredBookmarkFoldersInput.disabled = !profileOptions.saveCreatedBookmarks;
 	fileFormatSelectInput.value = profileOptions.compressContent ? profileOptions.selfExtractingArchive ? profileOptions.extractDataFromPage ?
 		"self-extracting-zip-universal" : "self-extracting-zip" : "zip" : "html";
 	createRootDirectoryInput.checked = profileOptions.createRootDirectory;
@@ -1093,15 +1062,10 @@ async function update() {
 			autoSaveLoadOrUnload: autoSaveLoadOrUnloadInput.checked,
 			autoSaveRepeat: autoSaveRepeatInput.checked,
 			autoSaveRepeatDelay: Math.max(autoSaveRepeatDelayInput.value, 1),
-			autoSaveExternalSave: autoSaveExternalSaveInput.checked,
 			removeAlternativeFonts: removeAlternativeFontsInput.checked,
 			removeAlternativeImages: removeAlternativeImagesInput.checked,
 			removeAlternativeMedias: removeAlternativeMediasInput.checked,
-			saveCreatedBookmarks: saveCreatedBookmarksInput.checked,
 			passReferrerOnError: passReferrerOnErrorInput.checked,
-			replaceBookmarkURL: replaceBookmarkURLInput.checked,
-			allowedBookmarkFolders: allowedBookmarkFoldersInput.value.replace(/([^\\]),/g, "$1 ,").split(/[^\\],/).map(folder => folder.replace(/\\,/g, ",")),
-			ignoredBookmarkFolders: ignoredBookmarkFoldersInput.value.replace(/([^\\]),/g, "$1 ,").split(/[^\\],/).map(folder => folder.replace(/\\,/g, ",")),
 			compressContent: fileFormatSelectInput.value.includes("zip"),
 			createRootDirectory: createRootDirectoryInput.checked,
 			disableCompression: disableCompressionInput.checked,
@@ -1152,41 +1116,6 @@ async function refreshExternalComponents() {
 	}
 }
 
-async function saveCreatedBookmarks() {
-	if (saveCreatedBookmarksInput.checked) {
-		saveCreatedBookmarksInput.checked = false;
-		try {
-			const permissionGranted = await browser.permissions.request({ permissions: ["bookmarks"] });
-			if (permissionGranted) {
-				saveCreatedBookmarksInput.checked = true;
-				await update();
-				await refresh();
-				await browser.runtime.sendMessage({ method: "bookmarks.saveCreatedBookmarks" });
-			} else {
-				await disableOption();
-			}
-			// eslint-disable-next-line no-unused-vars
-		} catch (error) {
-			saveCreatedBookmarksInput.checked = false;
-			await disableOption();
-		}
-	} else {
-		try {
-			await browser.permissions.remove({ permissions: ["bookmarks"] });
-			// eslint-disable-next-line no-unused-vars
-		} catch (error) {
-			// ignored
-		}
-		await disableOption();
-	}
-
-	async function disableOption() {
-		await update();
-		await refresh();
-		await browser.runtime.sendMessage({ method: "bookmarks.disable" });
-	}
-}
-
 async function onClickSaveToClipboard() {
 	if (saveToClipboardInput.checked) {
 		saveToClipboardInput.checked = false;
@@ -1210,35 +1139,6 @@ async function disableDestinationPermissions(permissions) {
 		// eslint-disable-next-line no-unused-vars
 	} catch (error) {
 		//ignored
-	}
-}
-
-async function enableExternalSave(input) {
-	if (input.checked) {
-		input.checked = false;
-		try {
-			const permissionGranted = await browser.permissions.request({ permissions: ["nativeMessaging"] });
-			if (permissionGranted) {
-				input.checked = true;
-				await refreshOption();
-				if (window.chrome) {
-					window.chrome.runtime.reload();
-				}
-			} else {
-				await refreshOption();
-			}
-			// eslint-disable-next-line no-unused-vars
-		} catch (error) {
-			input.checked = true;
-			await refreshOption();
-		}
-	} else {
-		await refreshOption();
-	}
-
-	async function refreshOption() {
-		await update();
-		await refresh();
 	}
 }
 
