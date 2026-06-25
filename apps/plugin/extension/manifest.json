@@ -117,10 +117,6 @@
       ]
     }
   ],
-  "oauth2": {
-    "client_id": "207618107333-7tjs1im1pighftpoepea2kvkubnfjj44.apps.googleusercontent.com",
-    "scopes": ["https://www.googleapis.com/auth/drive.file"]
-  },
   "permissions": [
     "contextMenus",
     "downloads",
@@ -133,7 +129,6 @@
     "declarativeNetRequest",
     "clipboardWrite"
   ],
-  "optional_permissions": ["identity", "nativeMessaging", "bookmarks"],
   "host_permissions": ["<all_urls>"],
   "devtools_page": "src/core/devtools/devtools.html",
   "incognito": "spanning",

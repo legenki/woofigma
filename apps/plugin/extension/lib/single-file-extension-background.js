@@ -5211,14 +5211,12 @@
                           return {};
                         }
                       })(e, t)
-                    : e.method.startsWith("bookmarks.")
-                      ? Ra(e)
-                      : e.method.startsWith("companion.")
-                        ? (async function (e) {
-                            if (e.method.endsWith(".state"))
-                              return { enabled: !0 };
-                          })(e)
-                        : e.method.startsWith("bootstrap.")
+                    : e.method.startsWith("companion.")
+                      ? (async function (e) {
+                          if (e.method.endsWith(".state"))
+                            return { enabled: !1 };
+                        })(e)
+                      : e.method.startsWith("bootstrap.")
                           ? (async function (e, t) {
                               if (e.method.endsWith(".init")) {
                                 const [e, a, n] = await Promise.all([

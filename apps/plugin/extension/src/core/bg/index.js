@@ -29,8 +29,6 @@ import "./../../lib/single-file/background.js";
 import * as config from "./config.js";
 import * as bootstrap from "./bootstrap.js";
 import * as autosave from "./autosave.js";
-import * as bookmarks from "./bookmarks.js";
-import * as companion from "./companion.js";
 import * as devtools from "./devtools.js";
 import * as downloads from "./downloads.js";
 import * as editor from "./editor.js";
@@ -64,11 +62,8 @@ browser.runtime.onMessage.addListener((message, sender) => {
 	if (message.method.startsWith("editor.")) {
 		return editor.onMessage(message, sender);
 	}
-	if (message.method.startsWith("bookmarks.")) {
-		return bookmarks.onMessage(message, sender);
-	}
-	if (message.method.startsWith("companion.")) {
-		return companion.onMessage(message, sender);
+	if (message.method == "companion.state") {
+		return Promise.resolve({ enabled: false });
 	}
 	if (message.method.startsWith("bootstrap.")) {
 		return bootstrap.onMessage(message, sender);
